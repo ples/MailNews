@@ -30,7 +30,7 @@ public class EmailContentServlet extends HttpServlet {
 	private int colorNum = 0;
 	private String path;
 	private String applicationServerURL;
-	private double header_cur_mail_ratio = 15/100;
+	private double header_cur_mail_ratio = 15/(double)100;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
