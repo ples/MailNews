@@ -30,6 +30,7 @@ public class EmailContentServlet extends HttpServlet {
 	private int colorNum = 0;
 	private String path;
 	private String applicationServerURL;
+	private double header_cur_mail_ratio = 15/100;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -164,26 +165,26 @@ public class EmailContentServlet extends HttpServlet {
 	}
 
 	private void addHeaderDiv(StringBuilder html) {
-		html.append("<table><tr><td style=\"width:5%; background-color:")
-				.append(colors[(colorNum + 1) % colors.length])
-				.append(";\"><div id=\"header-text\">");
-		addDivCurrentMail(html);
-		html.append("</div></td><td>");
-
-		html.append("<div id=\"header-text\" style=\"background-color:");
-		html.append(colors[colorNum]).append("\">");
-		
+		html.append("<table id='tab-head'><tr><td style=\"width:"
+				+ (int) (divWidth * (1 - header_cur_mail_ratio)) + "px;\">");
+		html.append("<div id=\"header-text\" style=\"background-color:")
+				.append(colors[colorNum]).append("\">");
 		html.append(messages.get(messageNum).getSubject());
 		html.append("</div>");
+		html.append(
+				"</td><td style=\"width:" + (int) (divWidth * header_cur_mail_ratio)
+						+ "px; overflow:hidden; background-color:")
+				.append(colors[(colorNum + 1) % colors.length]).append(";\">");
+		addDivCurrentMail(html);
 		html.append("</td></tr></table>");
-		
-
 	}
 
 	private void addDivCurrentMail(StringBuilder html) {
 		html.append("<div id='current_mail'>")
-		.append("<img src=\"email.png\">")
-				.append(messageNum + "\\" + messages.size()).append("</div>");
+				.append("<img src=\"mail_new.png\">")
+				.append("<div id=\"header-text\" >")
+				.append((messageNum + 1) + "\\" + messages.size())
+				.append("</div></div>");
 	}
 
 }

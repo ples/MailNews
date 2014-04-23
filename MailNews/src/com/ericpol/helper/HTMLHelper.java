@@ -120,7 +120,12 @@ public class HTMLHelper
 
     private int[] getNormalizedImageSize(int[] size)
     {
+    	if(size==null)
+    	{
+    		size = new int[2];
+    	}
         double ratio = ((double) size[0]) / size[1];
+    	
         int[] ret = new int[2];
         if (size[0] > divWidth / 2 || size[1] > divHeight / 2)
         {

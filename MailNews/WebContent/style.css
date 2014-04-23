@@ -17,9 +17,6 @@ td, table{
 
 #header-text {
 color: #ffffff;
-background-color:#355d7f;
-background-color:#882255;
-background-color:#22aa88;
 vertical-align: middle;
 text-align: center;
 padding: 20px 10px 10px 25px;
@@ -100,6 +97,14 @@ background-image: url(points.jpg)
 
 #current_mail img {
 	float: left;
-	height: inherit;
+	height: 55px;
+	margin-bottom: 10px;
+    margin-left: 10px;
+    margin-top: 10px;
 }
+
+#tab-head table,tr{
+	width: inherit;
+}
+
 

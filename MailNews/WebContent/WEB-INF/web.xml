@@ -37,7 +37,7 @@
   <context-param>
 		<description>URL of current application to use in refresh method</description>
 		<param-name>applicationServerURL</param-name>
-		<param-value>8080/Conference-1.0-SNAPSHOT/confs</param-value>
+		<param-value>8080/MailNews/mail</param-value>
 	</context-param>
   
   
