@@ -1,0 +1,105 @@
+
+html, body {
+	height: 100%;
+	margin: 0;
+}
+
+td, table{
+	border-spacing: 0;
+	border-collapse: collapse;
+	padding: 0;
+}
+
+#main{
+	margin: 0;
+}
+
+
+#header-text {
+color: #ffffff;
+background-color:#355d7f;
+background-color:#882255;
+background-color:#22aa88;
+vertical-align: middle;
+text-align: center;
+padding: 20px 10px 10px 25px;
+font:40px/48px "Trebuchet MS",Arial,Helvetica,sans-serif
+
+/**font:700 24px/29px "Trajan Pro"
+margin-bottom:10px;
+margin-left:25px;
+margin-top:20px;
+margin-right: 10px;
+*/
+}
+
+
+
+#general-description-text {
+	margin-left: 20px;
+	margin-right: 20px;
+	color:#535353;
+	font: 34px/41px "Trebuchet MS",Arial,Helvetica,sans-serif;
+	
+}
+
+#general-description-text p{
+
+text-align:left;
+margin-top:20px;
+margin-bottom: 20px;
+
+ background-image:url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==); 
+ background-repeat:repeat;
+
+}
+
+#general-description-text ul{
+	text-align:left;
+	padding-left: 20px;
+}
+
+#general-description-text img {
+	margin : 40px;
+}
+
+#general-description-text td {
+	border: 2px solid;
+	border-color: #225353;
+	
+}
+
+#general-description-text table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+#progress {
+	text-align:center;
+	margin: 0px;
+	padding: 0px;
+	height: 40px;
+}
+
+#progress a {
+	
+margin-top: 20px;
+margin-left: 10px;
+width: 20px;
+height: 20px;
+display: inline-block;
+zoom: 1;
+background-repeat: no-repeat;
+background-image: url(points.jpg)
+
+}
+
+#progress a.active {
+	background-position: -35px 0px;
+}
+
+#current_mail img {
+	float: left;
+	height: inherit;
+}
+
