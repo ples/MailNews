@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +21,7 @@ import com.ericpol.helper.MessageData;
 /**
  * Servlet implementation class EmailContentServlet
  */
+@WebServlet(name = "EmailContentServlet", urlPatterns = { "/mail/" }, asyncSupported = true)
 public class EmailContentServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static List<MessageBean> messages;
@@ -30,7 +35,8 @@ public class EmailContentServlet extends HttpServlet {
 	private int colorNum = 0;
 	private String path;
 	private String applicationServerURL;
-	private double header_cur_mail_ratio = 15/(double)100;
+	private String nextUrl;
+	private double header_cur_mail_ratio = 15 / (double) 100;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -40,6 +46,7 @@ public class EmailContentServlet extends HttpServlet {
 	}
 
 	public void init() throws ServletException {
+		
 		path = getServletContext().getRealPath("/");
 		messageData = new MessageData(path);
 		try {
@@ -59,7 +66,6 @@ public class EmailContentServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
 		messages = messageData.getMessages();
 		if (messages == null || messages.size() == 0) {
 			response.sendRedirect(applicationServerURL);
@@ -92,7 +98,11 @@ public class EmailContentServlet extends HttpServlet {
 		html.append("<!DOCTYPE html>\n<html>\n").append("<head>\n");
 		html.append("<meta charset=\"utf-8\" />");
 		html.append("<link rel=\"stylesheet\" href=\"style.css\"/>");
-		html.append("</style>\n").append("</head>\n").append("<body>");
+		
+		html.append("</style>\n")
+		.append("<script type=\"text/javascript\" src=\"requester.js\"></script>\n")
+		.append("<script type=\"text/javascript\" src=\"redirect_script.js\"></script>\n")
+		.append("</head>\n").append("<body>");
 		html.append("<div id=\"main\" style=\"width: ").append(divWidth);
 		html.append("px; overflow: hidden;\">");
 
@@ -106,6 +116,16 @@ public class EmailContentServlet extends HttpServlet {
 			html.append("</div>\n</div>\n</body>\n").append("\n</html>");
 		}
 		int refreshTime = getTime(messages.get(messageNum).getContentParts()[partNum]);
+		nextUrl = getNextUrl();
+		StringBuilder meta = new StringBuilder();
+		meta.append("<script>\n nextPage(\"").append(nextUrl).append("\",").append(6)
+					.append(");</script>");
+		out.println(html.toString() + meta.toString());
+		out.close();
+	}
+	
+	private String getNextUrl()
+	{
 		boolean lastURL = false;
 		if (partNum < messages.get(messageNum).getContentParts().length - 1) {
 			partNum++;
@@ -119,27 +139,93 @@ public class EmailContentServlet extends HttpServlet {
 		StringBuilder meta = new StringBuilder();
 
 		if (lastURL) {
-			meta.append("<meta http-equiv=\"refresh\" content=\"").append(3)
-					.append(";").append(applicationServerURL).append("\">");
+			meta.append(applicationServerURL);
 			lastURL = false;
 		} else {
-			meta.append("<meta http-equiv=\"refresh\" content=\"").append(3)
-					.append(";?next=").append(messageNum).append("_")
-					.append(partNum).append("&color=").append(colorNum)
-					.append("\">");
+			meta.append(applicationServerURL).append("?next=")
+					.append(messageNum).append("_").append(partNum)
+					.append("&color=").append(colorNum);
 		}
-
-		out.println(html.toString() + meta.toString());
-		out.close();
+		return meta.toString();
 	}
 
+	private String getPrevious()
+	{
+		boolean lastURL = false;
+		if (partNum > 0) {
+			partNum--;
+		} else {
+			if (messageNum == 0)
+			{
+				lastURL = true;
+			} else
+			{
+				messageNum--;
+				partNum = messages.get(messageNum).getContentParts().length-1;
+				colorNum = (colorNum + 1) % colors.length;
+			}
+			
+		}
+		StringBuilder meta = new StringBuilder();
+
+		if (lastURL) {
+			meta.append(applicationServerURL);
+			lastURL = false;
+		} else {
+			meta.append(applicationServerURL).append("?next=")
+					.append(messageNum).append("_").append(partNum)
+					.append("&color=").append(colorNum);
+		}
+		return meta.toString();
+	}
+	
+	private AsyncContext aClientContext;
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		
+		String param = request.getParameter("ajax");
+		if(param==null)
+			return;
+		if(param.contains("notifier-stop"))
+		{
+			response.getWriter().print("OK");
+			aClientContext.getResponse().getWriter().print("stop");
+			aClientContext.getResponse().getWriter().flush();
+			aClientContext.complete();
+		}
+		if(param.contains("notifier-play"))
+		{
+			response.getWriter().print("OK");
+			aClientContext.getResponse().getWriter().print("play");
+			aClientContext.getResponse().getWriter().flush();
+			aClientContext.complete();
+		}
+		if(param.contains("notifier-prev"))
+		{
+			response.getWriter().print("OK");
+			getPrevious();
+			aClientContext.getResponse().getWriter().print("url="+getPrevious());
+			aClientContext.getResponse().getWriter().flush();
+			aClientContext.complete();
+		}
+		if(param.contains("notifier-next"))
+		{
+			response.getWriter().print("OK");
+			aClientContext.getResponse().getWriter().print("url="+nextUrl);
+			aClientContext.getResponse().getWriter().flush();
+			aClientContext.complete();
+		}
+		if(param.contains("client-get"))
+		{
+			aClientContext = request.startAsync(request, response);
+			aClientContext.setTimeout(200 * 1000);
+		}
+		
 	}
 
 	private int getTime(String div) {
@@ -166,13 +252,15 @@ public class EmailContentServlet extends HttpServlet {
 
 	private void addHeaderDiv(StringBuilder html) {
 		html.append("<table id='tab-head'><tr><td style=\"width:"
-				+ (int) (divWidth * (1 - header_cur_mail_ratio)) + "px;\">");
-		html.append("<div id=\"header-text\" style=\"background-color:")
-				.append(colors[colorNum]).append("\">");
+				+ (int) (divWidth * (1 - header_cur_mail_ratio)) + "px;background-color:").
+				append(colors[colorNum]).append("\">");
+		html.append("<div id=\"header-text\" ")
+				.append(">");
 		html.append(messages.get(messageNum).getSubject());
 		html.append("</div>");
 		html.append(
-				"</td><td style=\"width:" + (int) (divWidth * header_cur_mail_ratio)
+				"</td><td style=\"width:"
+						+ (int) (divWidth * header_cur_mail_ratio)
 						+ "px; overflow:hidden; background-color:")
 				.append(colors[(colorNum + 1) % colors.length]).append(";\">");
 		addDivCurrentMail(html);
@@ -186,5 +274,7 @@ public class EmailContentServlet extends HttpServlet {
 				.append((messageNum + 1) + "\\" + messages.size())
 				.append("</div></div>");
 	}
+	
+	
 
 }
