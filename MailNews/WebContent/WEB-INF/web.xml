@@ -28,7 +28,7 @@
     <description></description>
     <display-name>EmailContentServlet</display-name>
     <servlet-name>EmailContentServlet</servlet-name>
-    <servlet-class>com.ericpol.servlet.EmailContentServlet</servlet-class>
+    <servlet-class>org.mailnews.servlet.EmailContentServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>EmailContentServlet</servlet-name>
