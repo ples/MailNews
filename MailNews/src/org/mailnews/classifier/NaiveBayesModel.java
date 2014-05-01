@@ -24,13 +24,14 @@ public class NaiveBayesModel {
 	{
 		Integer myWordCount = wordCount.get(c).get(w);
 		myWordCount = myWordCount == null ? Integer.valueOf(0) : myWordCount;
-		return Math.log(myWordCount + 1.0) / 
-				((double)length.get(c) + dictionarySize);
+		return Math.log((myWordCount + 1.0) / 
+				((double)length.get(c) + dictionarySize));
 	}
 	
 	public double classLogProbability(String c)
 	{
-		return Math.log((double)docCount.get(c) / getSumFromMap(docCount));
+		double ret = Math.log((double)docCount.get(c) / getSumFromMap(docCount));
+		return ret;
 	}	
 	
 	public Set<String> classes()
