@@ -392,6 +392,10 @@ public class HTMLHelper
 
     private int[] getImgSizeForGalery(int[] size)
     {
+    	if(size ==null)
+    	{
+    		size = new int[2];
+    	}
         double ratio = ((double) size[0]) / size[1];
         int[] ret = new int[2];
         if (size[0] > divWidth * 0.9 || size[1] > divHeight *0.9)
@@ -780,7 +784,7 @@ public class HTMLHelper
             }
             catch (Exception e1)
             {
-                e1.printStackTrace();
+                
             }
         }   
     }

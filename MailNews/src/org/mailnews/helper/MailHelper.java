@@ -4,6 +4,9 @@ import javax.mail.*;
 import javax.mail.internet.*;
 import javax.mail.search.FlagTerm;
 
+import org.mailnews.properties.AppProperties;
+import org.mailnews.properties.Constants;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -247,7 +250,7 @@ public class MailHelper
     public static boolean isOldLetter(Date receivedDate)
     {
         int daysInPeriod = daysInPeriod(receivedDate, new Date());
-        if (daysInPeriod < 0 || daysInPeriod > Settings.DAYS_PERIOD)
+        if (daysInPeriod < 0 || daysInPeriod > AppProperties.getInstance().getIntProperty(Constants.DAYS_PERIOD))
         {
             return true;
         }

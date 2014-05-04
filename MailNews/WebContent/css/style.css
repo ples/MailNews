@@ -15,40 +15,35 @@ td, table{
 }
 
 
-#header-text {
+#header-text div {
 color: #ffffff;
-vertical-align: middle;
 text-align: center;
 padding: 20px 10px 10px 25px;
 font:40px/48px "Trebuchet MS",Arial,Helvetica,sans-serif
-
-/**font:700 24px/29px "Trajan Pro"
-margin-bottom:10px;
-margin-left:25px;
-margin-top:20px;
-margin-right: 10px;
-*/
+}
+#header-text img {
+	height: 55px;
+	float: left;
+	margin-left: 10px;
+	margin-top: 10px;
 }
 
 
-
 #general-description-text {
-	margin-left: 20px;
-	margin-right: 20px;
+	
 	color:#535353;
 	font: 34px/41px "Trebuchet MS",Arial,Helvetica,sans-serif;
 	
 }
 
 #general-description-text p{
-
-text-align:left;
-margin-top:20px;
-margin-bottom: 20px;
-
- background-image:url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==); 
- background-repeat:repeat;
-
+	margin-left: 20px;
+	margin-right: 20px;
+	text-align:left;
+	margin-top:20px;
+	margin-bottom: 20px;
+ 	background-image:url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==); 
+ 	background-repeat:repeat;
 }
 
 #general-description-text ul{
@@ -87,7 +82,7 @@ height: 20px;
 display: inline-block;
 zoom: 1;
 background-repeat: no-repeat;
-background-image: url(points.jpg)
+background-image: url(../img/points.jpg)
 
 }
 
@@ -111,7 +106,7 @@ background-image: url(points.jpg)
 	width: 90%;
 	height: 90%;
 	margin: 3%;
-	background-image: url("icons.png");
+	background-image: url("../img/icons.png");
 	background-repeat: no-repeat;
 	background-size: 200% 200%;
 	border-collapse: collapse;

@@ -3,12 +3,14 @@ package org.mailnews.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.mailnews.helper.HTMLHelper;
 import org.mailnews.helper.MessageBean;
 import org.mailnews.helper.MessageData;
+import org.mailnews.helper.PostRequestHelper;
+import org.mailnews.properties.AppProperties;
+import org.mailnews.properties.Constants;
 
 /**
  * Servlet implementation class EmailContentServlet
@@ -37,6 +42,7 @@ public class EmailContentServlet extends HttpServlet {
 	private String applicationServerURL;
 	private String nextUrl;
 	private double header_cur_mail_ratio = 15 / (double) 100;
+	private boolean initFail = false;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -48,15 +54,21 @@ public class EmailContentServlet extends HttpServlet {
 	public void init() throws ServletException {
 		
 		path = getServletContext().getRealPath("/");
+		if(!AppProperties.getInstance().loadFromFile(path+"/props.property"))
+		{
+			initFail = true;
+		}
+
 		messageData = new MessageData(path);
 		try {
+			divWidth = AppProperties.getInstance().getIntProperty(Constants.DIV_WIDTH);
 			applicationServerURL = "http://"
 					+ InetAddress.getLocalHost().getHostAddress()
 					+ ":"
 					+ getServletContext().getInitParameter(
 							"applicationServerURL");
 		} catch (Exception e) {
-			e.printStackTrace();
+			initFail=true;
 		}
 	}
 
@@ -67,7 +79,7 @@ public class EmailContentServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		messages = messageData.getMessages();
-		if (messages == null || messages.size() == 0) {
+		if (messages == null || messages.size() == 0 || initFail) {
 			response.sendRedirect(applicationServerURL);
 			return;
 		}
@@ -97,11 +109,11 @@ public class EmailContentServlet extends HttpServlet {
 		StringBuilder html = new StringBuilder();
 		html.append("<!DOCTYPE html>\n<html>\n").append("<head>\n");
 		html.append("<meta charset=\"utf-8\" />");
-		html.append("<link rel=\"stylesheet\" href=\"style.css\"/>");
+		html.append("<link rel=\"stylesheet\" href=\"css/style.css\"/>");
 		
 		html.append("</style>\n")
-		.append("<script type=\"text/javascript\" src=\"requester.js\"></script>\n")
-		.append("<script type=\"text/javascript\" src=\"redirect_script.js\"></script>\n")
+		.append("<script type=\"text/javascript\" src=\"js/requester.js\"></script>\n")
+		.append("<script type=\"text/javascript\" src=\"js/redirect_script.js\"></script>\n")
 		.append("</head>\n").append("<body>");
 		html.append("<div id=\"main\" style=\"width: ").append(divWidth);
 		html.append("px; overflow: hidden;\">");
@@ -179,51 +191,92 @@ public class EmailContentServlet extends HttpServlet {
 		return meta.toString();
 	}
 	
-	private AsyncContext aClientContext;
+	
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	private List<AsyncContext> aClientContexts = new ArrayList<AsyncContext>();
+	{
+		aClientContexts = Collections.synchronizedList(aClientContexts);
+	}
+	private boolean isStoped = false;
 	
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		
-		String param = request.getParameter("ajax");
+		if(request.getParameter("client-command") != null)
+		{
+			AsyncContext aTmpContext = request.startAsync(request, response);
+			aTmpContext.addListener(new AsyncListener() {
+				
+				@Override
+				public void onTimeout(AsyncEvent arg0) throws IOException {
+					System.out.println("Size before:" + aClientContexts.size());
+					aClientContexts.remove(arg0.getAsyncContext());
+					System.out.println("Size after:" + aClientContexts.size());
+				}
+				
+				@Override
+				public void onStartAsync(AsyncEvent arg0) throws IOException {
+				}
+				
+				@Override
+				public void onError(AsyncEvent arg0) throws IOException {
+					aClientContexts.remove(arg0.getAsyncContext());
+				}
+				
+				@Override
+				public void onComplete(AsyncEvent arg0) throws IOException {
+					aClientContexts.remove(arg0.getAsyncContext());
+				}
+			});
+			aTmpContext.setTimeout(isStoped ? Integer.MAX_VALUE :Integer.parseInt((request.getParameter("time"))));
+			aClientContexts.add(aTmpContext);
+		}
+		if(request.getParameter("admin-command") != null)
+		{
+			PostRequestHelper.processAdminPostRequest(request, response);
+		}
+		String param = request.getParameter("notifier-command");
 		if(param==null)
+		{
 			return;
+		}
 		if(param.contains("notifier-stop"))
 		{
+			isStoped = true;
 			response.getWriter().print("OK");
-			aClientContext.getResponse().getWriter().print("stop");
-			aClientContext.getResponse().getWriter().flush();
-			aClientContext.complete();
+			sendCommand("stop");
 		}
 		if(param.contains("notifier-play"))
 		{
+			isStoped = false;
 			response.getWriter().print("OK");
-			aClientContext.getResponse().getWriter().print("play");
-			aClientContext.getResponse().getWriter().flush();
-			aClientContext.complete();
+			sendCommand("play");
 		}
 		if(param.contains("notifier-prev"))
 		{
 			response.getWriter().print("OK");
 			getPrevious();
-			aClientContext.getResponse().getWriter().print("url="+getPrevious());
-			aClientContext.getResponse().getWriter().flush();
-			aClientContext.complete();
+			sendCommand("url="+getPrevious());
 		}
 		if(param.contains("notifier-next"))
 		{
 			response.getWriter().print("OK");
-			aClientContext.getResponse().getWriter().print("url="+nextUrl);
-			aClientContext.getResponse().getWriter().flush();
-			aClientContext.complete();
+			sendCommand("url="+nextUrl);
 		}
-		if(param.contains("client-get"))
-		{
-			aClientContext = request.startAsync(request, response);
-			aClientContext.setTimeout(200 * 1000);
+	}
+	
+	private void sendCommand(String command) throws IOException
+	{
+		System.out.println(command);
+		synchronized (aClientContexts) {
+			for(AsyncContext aClientContext : aClientContexts)
+			{
+				aClientContext.getResponse().getWriter().print(command);
+				aClientContext.getResponse().getWriter().flush();
+				aClientContext.complete();
+			}
 		}
 		
 	}
@@ -251,10 +304,10 @@ public class EmailContentServlet extends HttpServlet {
 	}
 
 	private void addHeaderDiv(StringBuilder html) {
-		html.append("<table id='tab-head'><tr><td style=\"width:"
+		html.append("<table id='tab-head'><tr id=\"header-text\"><td style=\"width:"
 				+ (int) (divWidth * (1 - header_cur_mail_ratio)) + "px;background-color:").
 				append(colors[colorNum]).append("\">");
-		html.append("<div id=\"header-text\" ")
+		html.append("<div  ")
 				.append(">");
 		html.append(messages.get(messageNum).getSubject());
 		html.append("</div>");
@@ -268,11 +321,11 @@ public class EmailContentServlet extends HttpServlet {
 	}
 
 	private void addDivCurrentMail(StringBuilder html) {
-		html.append("<div id='current_mail'>")
-				.append("<img src=\"mail_new.png\">")
-				.append("<div id=\"header-text\" >")
+		html
+				.append("<img src=\"img/mail_new.png\">")
+				.append("<div>")
 				.append((messageNum + 1) + "\\" + messages.size())
-				.append("</div></div>");
+				.append("</div>");
 	}
 	
 	

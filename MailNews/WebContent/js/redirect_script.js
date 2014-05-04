@@ -10,8 +10,8 @@ function nextPage(url,time)
 	URL = url;
 	timeStamp =new Date();
 	appURL = url.split("?")[0];
-	startRequest("ajax=client-get", url, handleResponse);
 	secondsToRedirect = time*1000;
+	startRequest("client-command=client-get&time="+secondsToRedirect, url, handleResponse);
 	setTimeout("updateTime()", secondsToRedirect);
 }
 
@@ -33,7 +33,7 @@ function handleResponse(text)
 		stopState = false;
 		setTimeout("updateTime()", secondsToRedirect);
 	}
-	startRequest("ajax=client-get", appURL, handleResponse);
+	startRequest("client-command=client-get&time="+secondsToRedirect, appURL, handleResponse);
 }
 
 function redirectTo(url)

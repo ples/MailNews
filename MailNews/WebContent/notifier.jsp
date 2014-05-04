@@ -5,8 +5,8 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<link href="style.css" rel="stylesheet">
-<script type="text/javascript" src="requester.js"></script>
+<link href="css/style.css" rel="stylesheet">
+<script type="text/javascript" src="js/requester.js"></script>
 <title>Notifier page</title>
 <%String url =  "http://"+InetAddress.getLocalHost().getHostAddress() + ":8080" + getServletContext().getContextPath()+"/mail"; %>
 </head>
@@ -15,18 +15,18 @@
 		<table>
 			<tr>
 				<td><button class="button-stop"
-				onclick="startRequest('ajax=notifier-stop', '<%=url%>', defaultHandler)">
+				onclick="startRequest('notifier-command=notifier-stop', '<%=url%>', defaultHandler)">
 				</button></td>
 				<td><button class="button-play"
-				onclick="startRequest('ajax=notifier-play', '<%=url %>', defaultHandler)">
+				onclick="startRequest('notifier-command=notifier-play', '<%=url %>', defaultHandler)">
 				</button></td>
 			</tr>
 			<tr>
 				<td><button class="button-prev"
-				onclick="startRequest('ajax=notifier-prev', '<%=url%>', defaultHandler)">
+				onclick="startRequest('notifier-command=notifier-prev', '<%=url%>', defaultHandler)">
 				</button></td>
 				<td><button class="button-next"
-				onclick="startRequest('ajax=notifier-next', '<%=url%>', defaultHandler)">
+				onclick="startRequest('notifier-command=notifier-next', '<%=url%>', defaultHandler)">
 				</button></td>
 			</tr>
 		</table>
