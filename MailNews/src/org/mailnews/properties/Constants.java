@@ -46,24 +46,6 @@ public class Constants {
 	public static final String DAYS_PERIOD = "days-period";
 	public static final String SYMB_PER_SEC = "symb-per-sec";
 	public static final String IMAGE_WATCH_TIME_SEC = "image-watch-time";
-//
-//	static {
-//		Field[] fields = Constants.class.getFields();
-//		Properties styleProps = new Properties();
-//		try {
-//			for (int i = 0; i < fields.length; i++) {
-//				styleProps.put(fields[i].get(fields[i].getType()).toString(),"");
-//			}
-//			File file = new File("d:\\props.property");
-//			file.createNewFile();
-//			styleProps.store(new FileOutputStream(file), "");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//
-//	public static void main(String ... args)
-//	{
-//		System.out.println("Hello");
-//	}
+	
+	public static final String PROPS_FILE= "props.property";
 }

@@ -1,4 +1,60 @@
-html,body , #tabs
-{
+html,body{
 	height: 100%;
+}
+
+
+#mails {
+	border: 2px;
+	height: 300px;
+	overflow-y: auto;
+}
+
+#mails-buttons  {
+
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding: 20px;
+	text-align: center;
+}
+
+#mails-buttons button {
+
+	background: none repeat scroll 0 0 #F39814;
+	color: white;
+}
+#mails-content  {
+
+	text-align: center;
+	background:  repeat scroll 0 0 #FFFFFF;
+}
+
+#mails-content  img{
+	max-width: 40%;
+	float: left;
+	
+}
+
+#subjects .ui-selecting {
+	background: #FECA40;
+}
+
+#subjects .ui-selected 
+{
+	background: #F39814;
+	color: white;
+}
+
+#subjects {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+#subjects li {
+	
+	margin: 3px;
+	padding: 0.4em;
+	font-size: 15px;
+	height: auto;
 }

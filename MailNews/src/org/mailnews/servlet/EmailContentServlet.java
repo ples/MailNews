@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.mailnews.helper.HTMLHelper;
 import org.mailnews.helper.MessageBean;
 import org.mailnews.helper.MessageData;
+import org.mailnews.helper.MessagesDataSingleton;
 import org.mailnews.helper.PostRequestHelper;
 import org.mailnews.properties.AppProperties;
 import org.mailnews.properties.Constants;
@@ -31,10 +32,8 @@ public class EmailContentServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static List<MessageBean> messages;
 	private static MessageData messageData;
-	private int divWidth = 1920;
-	private String[] colors = { "#355d7f", "#22aa88", "#882255", "#fbaf22" };
-
-	public final static int symbPerSec = 50;
+	private int divWidth;
+	private String[] colors;
 	private int messageNum = 0;
 	private int partNum = 0;
 	private int colorNum = 0;
@@ -58,10 +57,12 @@ public class EmailContentServlet extends HttpServlet {
 		{
 			initFail = true;
 		}
-
-		messageData = new MessageData(path);
+		
 		try {
+			MessagesDataSingleton.setPath(path);
+			messageData = MessagesDataSingleton.getInstance().getMessageData();
 			divWidth = AppProperties.getInstance().getIntProperty(Constants.DIV_WIDTH);
+			colors = AppProperties.getInstance().getArrayProperty(Constants.COLORS);
 			applicationServerURL = "http://"
 					+ InetAddress.getLocalHost().getHostAddress()
 					+ ":"
@@ -130,7 +131,7 @@ public class EmailContentServlet extends HttpServlet {
 		int refreshTime = getTime(messages.get(messageNum).getContentParts()[partNum]);
 		nextUrl = getNextUrl();
 		StringBuilder meta = new StringBuilder();
-		meta.append("<script>\n nextPage(\"").append(nextUrl).append("\",").append(6)
+		meta.append("<script>\n nextPage(\"").append(nextUrl).append("\",").append(refreshTime)
 					.append(");</script>");
 		out.println(html.toString() + meta.toString());
 		out.close();
@@ -211,9 +212,7 @@ public class EmailContentServlet extends HttpServlet {
 				
 				@Override
 				public void onTimeout(AsyncEvent arg0) throws IOException {
-					System.out.println("Size before:" + aClientContexts.size());
 					aClientContexts.remove(arg0.getAsyncContext());
-					System.out.println("Size after:" + aClientContexts.size());
 				}
 				
 				@Override
@@ -286,7 +285,7 @@ public class EmailContentServlet extends HttpServlet {
 				+ HTMLHelper.STR_LEN_ATTR.length() + 2;
 		int length = Integer.parseInt(div.substring(indFst,
 				div.indexOf("\"", indFst + 1)));
-		return length / symbPerSec;
+		return length / AppProperties.getInstance().getIntProperty(Constants.SYMB_PER_SEC);
 	}
 
 	private String generateProgress(int pagesCount, int currentPage) {

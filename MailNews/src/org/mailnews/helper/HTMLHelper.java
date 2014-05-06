@@ -27,9 +27,7 @@ public class HTMLHelper
     private int headerSpacing;
     private Font headerFont;
     private Font contentFont;
-    private HTML html;
     private FontMetrics fm;
-    private int beginPPadding;
     private int marginText;
     private int marginImg;
     private Document document;
@@ -112,10 +110,8 @@ public class HTMLHelper
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 
     private int[] getNormalizedImageSize(int[] size)

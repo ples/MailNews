@@ -8,6 +8,7 @@ import java.util.Properties;
 public class AppProperties {
 
 	private static AppProperties instance;
+	private static boolean initialized = false;
 	
 	public static AppProperties getInstance()
 	{
@@ -25,6 +26,11 @@ public class AppProperties {
 		props = new Properties();
 	}
 	
+	public static boolean isInitialized()
+	{
+		return initialized;
+	}
+	
 	public boolean loadFromFile(String aPropertyFilePath)
 	{
 		try
@@ -35,6 +41,7 @@ public class AppProperties {
 		{
 			return false;
 		}
+		initialized = true;
 		return true;
 	}
 	

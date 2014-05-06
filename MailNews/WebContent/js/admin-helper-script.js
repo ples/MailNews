@@ -43,5 +43,17 @@ function bindFormOnAJAX(form_id, onComplete)
 function onFilterComplete(aResponse)
 {
 	if(aResponse == "saved")
-	$("#save-status").html("Successful!");
+	var n = noty({text: 'SAVED!'});
+}
+
+function onSpeedComplete(aResponse)
+{
+	if(aResponse == "saved")
+		var n = noty({text: 'SAVED!'});
+}
+
+function onManagerComplete(aResponse)
+{
+	if(aResponse == "saved")
+	var n = noty({text: 'SAVED!'});
 }

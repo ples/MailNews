@@ -1,7 +1,7 @@
 #
 #Sun May 04 22:24:13 FET 2014
 div-height=1080
-password=Xzsawq7208658
+password=Iamironman1
 header-margin=25, 10, 20, 10
 store-protocol=imaps
 font-header-size=40
@@ -22,5 +22,5 @@ image-watch-time=5
 letters-refresh-time=10
 div-width=1920
 text-indenter=0
-head-colors=\#355d7f, \#22aa88, \#882255, \#fbaf22, black
+head-colors=\#355d7f, \#22aa88, \#882255, \#fbaf22
 img-margin=40
