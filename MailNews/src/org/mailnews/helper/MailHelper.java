@@ -49,7 +49,6 @@ public class MailHelper
         }
         else
         {
-
             messages = inbox.getMessages();
         }
         messages = filterMessagesByDate(messages);
@@ -77,30 +76,37 @@ public class MailHelper
     private static ArrayList<MessageBean> getPart(Message[] messages) throws Exception
     {
         ArrayList<MessageBean> listMessages = new ArrayList<MessageBean>();
-
         for (Message inMessage : messages)
         {
-            List<String> attachments = null;
-            if (inMessage.isMimeType("text/*"))
+            try
             {
-                MessageBean message =
-                        new MessageBean(inMessage.getMessageNumber(), MimeUtility.decodeText(checkForNull(inMessage
-                                .getSubject())), inMessage.getFrom()[0].toString(), null,
-                                inMessage.getReceivedDate(), (String) inMessage.getContent(), false, null,
-                                inMessage.getContentType());
-                listMessages.add(message);
+                List<String> attachments = null;
+                if (inMessage.isMimeType("text/*"))
+                {
+                    MessageBean message =
+                            new MessageBean(inMessage.getMessageNumber(),
+                                    MimeUtility.decodeText(checkForNull(inMessage.getSubject())),
+                                    inMessage.getFrom()[0].toString(), null, inMessage.getReceivedDate(),
+                                    (String) inMessage.getContent(), false, null, inMessage.getContentType());
+                    listMessages.add(message);
+                }
+                else if (inMessage.isMimeType("multipart/*"))
+                {
+                    Multipart mp = (Multipart) inMessage.getContent();
+
+                    MessageBean message =
+                            new MessageBean(inMessage.getMessageNumber(),
+                                    MimeUtility.decodeText(checkForNull(inMessage.getSubject())),
+                                    getFrom(inMessage.getFrom()), null, inMessage.getReceivedDate(), null, false,
+                                    null, inMessage.getContentType());
+                    processMultipartBody(mp, message, attachments);
+
+                    listMessages.add(message);
+                }
             }
-            else if (inMessage.isMimeType("multipart/*"))
+            catch (Exception e)
             {
-                Multipart mp = (Multipart) inMessage.getContent();
-
-                MessageBean message =
-                        new MessageBean(inMessage.getMessageNumber(), MimeUtility.decodeText(checkForNull(inMessage
-                                .getSubject())), getFrom(inMessage.getFrom()), null, inMessage.getReceivedDate(),
-                                null, false, null, inMessage.getContentType());
-                processMultipartBody(mp, message, attachments);
-
-                listMessages.add(message);
+                
             }
         }
 

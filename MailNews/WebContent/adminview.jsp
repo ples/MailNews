@@ -1,3 +1,4 @@
+<%@page import="java.util.List"%>
 <%@page import="org.mailnews.properties.Constants"%>
 <%@page import="org.mailnews.properties.AppProperties"%>
 <%@page import="org.mailnews.helper.MessageBean"%>
@@ -6,12 +7,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%
-	if (!AppProperties.isInitialized())
+    if (!AppProperties.isInitialized())
 	{
 		AppProperties.getInstance().loadFromFile(getServletContext().getRealPath("/") + "/" + Constants.PROPS_FILE);
 	}
-	MessagesDataSingleton.setPath(getServletContext().getRealPath("/"));
-	itsMessageData = MessagesDataSingleton.getInstance().getMessageData();
+    MessagesDataSingleton.setPath(getServletContext().getRealPath("/"));
+    itsMessages = MessagesDataSingleton.getInstance().getMessages();
+    itsSpam = MessagesDataSingleton.getInstance().getMessageData().getSpam();
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -37,6 +39,8 @@
 			<li><a href="#filter-options">Filter options</a></li>
 			<li><a href="#read-speed-options">Read speed options</a></li>
 			<li><a href="#mail-manager">Mail manager</a></li>
+			<li><a href="#spam-manager">SPAM manager</a></li>
+			<li><a href="#classifier-options">Classifier</a></li>
 		</ul>
 		<div id="filter-options">
 			<form id="filter-form" action="" method="post">
@@ -76,30 +80,37 @@
 				<button type="submit">Save</button>
 			</form>
 		</div>
+		<!-- 
+			this is manager part 
+		-->
 		<div id="mail-manager">
 			<div id="mails">
 				<ol id="subjects">
 					<%
-						for(MessageBean eachMessage : itsMessageData.getMessages())
+					synchronized(itsMessages){
+						for(MessageBean eachMessage : itsMessages)
 								{
 					%>
 					<li id="<%=eachMessage.getMsgId()%>" class="ui-widget-content"><%=eachMessage.getSubject()%></li>
 					<%
 						}
+					}
 					%>
 				</ol>
 			</div>
 			<div id="mails-buttons">
 				<form id="mail-manager-form" action="" method="post">
 				<input id="selected-mails-input" type="hidden" name="selected-mails-id">
-					<button type="submit" name="spam-mark">Mark as SPAM</button>
-					<button type="submit" name="delete-mail">Delete</button>
-					<button type="submit" name="spam-mark">Edit</button>
+				<input id="command" name="admin-command" value="" type="hidden">
+					<button type="submit" onclick="$('#command').attr('value','spam-mark')" >Mark as SPAM</button>
+					<button type="submit" onclick="$('#command').attr('value','delete-mail')">Delete</button>
+					<button type="submit" onclick="$('#command').attr('value','refresh')">Refresh</button>
 				</form>
 			</div>
 			<div id="mails-content">
 				<%
-					for (MessageBean eachMessage : itsMessageData.getMessages()) {
+				synchronized(itsMessages){
+					for (MessageBean eachMessage :itsMessages) {
 				%>
 				<div id="<%=eachMessage.getMsgId()%>-content" style="display: none;"
 					class="ui-widget-content">
@@ -115,8 +126,62 @@
 				</div>
 				<%
 					}
+				}
 				%>
 			</div>
+		</div>
+		<!-- 
+			this is SPAM manager part 
+		-->
+		<div id="spam-manager">
+			<div id="spam">
+				<ol id="spam-subjects">
+					<%
+					synchronized(itsSpam){
+						for(MessageBean eachMessage : itsSpam)
+								{
+					%>
+					<li id="<%=eachMessage.getMsgId()%>" class="ui-widget-content"><%=eachMessage.getSubject()%></li>
+					<%
+						}
+					}
+					%>
+				</ol>
+			</div>
+			<div id="mails-buttons">
+				<form id="spam-manager-form" action="" method="post">
+				<input id="selected-spam-input" type="hidden" name="selected-spam-id">
+				<input id="command" name="admin-command" value="spam-action" type="hidden">
+					<button type="submit" onclick="$('#command').attr('value','delete-mark')" >Delete from SPAM-list</button>
+					<button type="submit" onclick="$('#command').attr('value','delete-mail')">Delete</button>
+					<button type="submit" onclick="$('#command').attr('value','refresh')">Refresh</button>
+				</form>
+			</div>
+			<div id="spam-content">
+				<%
+				synchronized(itsSpam){
+					for (MessageBean eachMessage :itsSpam) {
+				%>
+				<div id="<%=eachMessage.getMsgId()%>-content" style="display: none;"
+					class="ui-widget-content">
+					<%=eachMessage.getContent()%>
+					<%
+						if(eachMessage.getAttachments()!=null)
+								for (String attachment : eachMessage.getAttachments()) {
+					%>
+					<img alt="Image" src="<%=attachment%>">
+					<%
+						}
+					%>
+				</div>
+				<%
+					}
+				}
+				%>
+			</div>
+		</div>
+		<div id="classifier-options">
+			<p> Coming soon...</p>
 		</div>
 	</div>
 </body>
@@ -124,13 +189,14 @@
 URL = "mail";
 bindFormOnAJAX("#filter-form", onFilterComplete);
 bindFormOnAJAX("#read-speed-form", onSpeedComplete);
-bindFormOnAJAX("#mail-manager-form", onSpeedComplete);
+bindFormOnAJAX("#mail-manager-form", onManagerComplete);
+bindFormOnAJAX("#spam-manager-form", onSpamManagerComplete);
 $(function() {
 	$( "#subjects" ).selectable({
 		stop: function (){
 			$("#selected-mails-input").attr("value","");
 			var ids = new String();
-			$(".ui-selectee").each(
+			$(".ui-selectee",this).each(
 					function(){
 					$("#"+$(this).attr("id")+"-content").attr("style","display:none;");
 					});
@@ -144,6 +210,28 @@ $(function() {
 			}
 	});
 	});
+$(function() {
+	$( "#spam-subjects" ).selectable({
+		stop: function (){
+			$("#selected-spam-input").attr("value","");
+			var ids = new String();
+			$(".ui-selectee",this).each(
+					function(){
+					$("#"+$(this).attr("id")+"-content").attr("style","display:none;");
+					});
+				
+			 $(".ui-selected", this).each(function(){
+				 $("#" + $(this).attr("id")+"-content").attr("style","display:inline;");
+				 ids += $(this).attr("id") + ",";
+			 });
+				ids = ids.substring(0, ids.length-1);
+				$("#selected-spam-input").attr("value",ids);
+			}
+	});
+	});
 </script>
 </html>
-<%!private MessageData itsMessageData;%>
+<%!
+private List<MessageBean> itsMessages;
+private List<MessageBean> itsSpam;
+%>

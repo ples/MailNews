@@ -43,17 +43,43 @@ function bindFormOnAJAX(form_id, onComplete)
 function onFilterComplete(aResponse)
 {
 	if(aResponse == "saved")
-	var n = noty({text: 'SAVED!'});
+		noty({text: 'SAVED!'});
 }
 
 function onSpeedComplete(aResponse)
 {
 	if(aResponse == "saved")
-		var n = noty({text: 'SAVED!'});
+		noty({text: 'SAVED!'});
 }
 
 function onManagerComplete(aResponse)
 {
-	if(aResponse == "saved")
-	var n = noty({text: 'SAVED!'});
+	if(aResponse.indexOf("saved") != -1)
+	{
+		noty({text: 'SAVED!'});
+		var idsStr = $("#selected-mails-input").attr("value");
+		idsStr += "," + aResponse.split(":")[1];
+		var ids = idsStr.split(",");
+		for ( var i = 0; i < ids.length; i++)
+		{
+			$("#"+ ids[i]).remove();
+			$("#"+ ids[i] + "-content").remove();
+		}
+	}
+}
+
+function onSpamManagerComplete(aResponse)
+{
+	if(aResponse.indexOf("saved") != -1)
+	{
+		noty({text: 'SAVED!'});
+		var idsStr = $("#selected-spam-input").attr("value");
+		idsStr += "," + aResponse.split(":")[1];
+		var ids = idsStr.split(",");
+		for ( var i = 0; i < ids.length; i++)
+		{
+			$("#"+ ids[i]).remove();
+			$("#"+ ids[i] + "-content").remove();
+		}
+	}
 }

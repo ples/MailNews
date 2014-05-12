@@ -40,7 +40,7 @@ public class NaiveBayesClassifier {
 	
 	public static String[] tokenize(String aText)
 	{
-		String [] words = aText.toLowerCase().split("([\\p{Punct}\\s]+)");
+		String [] words = aText.toLowerCase().split("([^\\w]+)(\\d*)(_*)");
 		return words;
 	}
 	

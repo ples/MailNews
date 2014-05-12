@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.swing.text.html.HTML;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;

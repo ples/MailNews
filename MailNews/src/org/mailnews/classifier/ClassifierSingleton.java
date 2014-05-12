@@ -20,9 +20,9 @@ public class ClassifierSingleton {
 		itsLearner = new NaiveBayesLearningAlgorithm();
 	}
 	
-	public void learn(String aClass, String aText)
+	public void learn(Integer mailId, String aClass, String aText)
 	{
-		itsLearner.addExample(aText, aClass);
+		itsLearner.addExample(mailId, aText, aClass);
 	}
 	
 	public String getClass(String aClass, String aText, double minProbability, String reserveClass)
@@ -30,4 +30,13 @@ public class ClassifierSingleton {
 		return itsLearner.getClassifier().classify(aText, aClass, minProbability, reserveClass);
 	}
 	
+	public void setMailClass(Integer aMailId, String newClass)
+	{
+	    itsLearner.setClass(aMailId, newClass);
+	} 
+	
+	public void clearDictionary()
+	{
+	    itsLearner.clearDictionary();
+	}
 }

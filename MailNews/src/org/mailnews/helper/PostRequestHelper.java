@@ -9,105 +9,134 @@ import javax.servlet.http.HttpServletResponse;
 import org.mailnews.properties.AppProperties;
 import org.mailnews.properties.Constants;
 
-public class PostRequestHelper 
+public class PostRequestHelper
 {
-	
-	public static void processAdminPostRequest(HttpServletRequest request,
-			HttpServletResponse response) throws IOException
-	{
-		String command = request.getParameter("admin-command");
-		if(command.equals("filter-save"))
-		{
-			saveFilterProperties(request, response);
-		}
-		if(command.equals("read-speed-save"))
-		{
-			saveSpeedProperties(request, response);
-		}
-		if(command.equals("spam-mark"))
-		{
-			markMailAsSpam(request, response);
-		}
-		if(command.equals("delete-mail"))
-		{
-			markMailAsSpam(request, response);
-		}
-	}
-	
-	private static void saveFilterProperties(HttpServletRequest request,
-			HttpServletResponse response) throws IOException
-	{
-		String mailInterval = request.getParameter("mail-life-interval");
-		String refreshInterval = request.getParameter("refresh-interval");
-		if( mailInterval!= null && refreshInterval!= null)
-		{
-			try{
-				AppProperties.getInstance().setIntProperty(Constants.DAYS_PERIOD,
-						Integer.parseInt(mailInterval.trim()));
-				AppProperties.getInstance().setIntProperty(Constants.LETTERS_REFRESH_TIME,
-						Integer.parseInt(refreshInterval.trim()));
-			}
-			catch(Exception e)
-			{
-				response.getWriter().print("fail");
-			}
-			response.getWriter().print("saved");
-		}
-	}
-	
-	private static void saveSpeedProperties(HttpServletRequest request,
-			HttpServletResponse response) throws IOException
-	{
-		String symbolPerSec = request.getParameter("symb-per-sec");
-		String imageWatchTime = request.getParameter("image-watch-time");
-		if( symbolPerSec!= null && imageWatchTime!= null)
-		{
-			try{
-				AppProperties.getInstance().setIntProperty(Constants.SYMB_PER_SEC,
-						Integer.parseInt(symbolPerSec.trim()));
-				AppProperties.getInstance().setIntProperty(Constants.IMAGE_WATCH_TIME_SEC,
-						Integer.parseInt(imageWatchTime.trim()));
-				
-			}
-			catch(Exception e)
-			{
-				response.getWriter().print("fail");
-			}
-			response.getWriter().print("saved");
-		}
-	}
-	
-	private static void markMailAsSpam(HttpServletRequest request,
-			HttpServletResponse response) throws IOException
-	{
-		
-			response.getWriter().print("saved");
-		
-	}
-	
-	private static void deleteMails(HttpServletRequest request,
-			HttpServletResponse response) throws IOException
-	{
-		
-		String ids = request.getParameter("selected-mails-id");
-		if(ids == null)
-		{
-			response.getWriter().print("fail");
-		}
-		List<MessageBean> messages = MessagesDataSingleton.getInstance().getMessageData().getMessages();
-		String[] idArr = ids.split(",");
-		for (int i = 0; i < idArr.length; i++) 
-		{
-			for (int j = 0; j < messages.size(); j++) 
-			{
-				if( messages.get(j).getMsgId() == Integer.parseInt(idArr[i]))
-				{
-					messages.remove(j);
-				}
-			}
-		}
-		response.getWriter().print("saved");
-	}
-	
-	
+
+    public static void processAdminPostRequest(HttpServletRequest request, HttpServletResponse response)
+            throws IOException
+    {
+        String command = request.getParameter("admin-command");
+        if (command.equals("filter-save"))
+        {
+            saveFilterProperties(request, response);
+        }
+        if (command.equals("read-speed-save"))
+        {
+            saveSpeedProperties(request, response);
+        }
+        if (command.equals("spam-mark"))
+        {
+            markMailAsSpam(request, response);
+        }
+        if (command.equals("delete-mail"))
+        {
+            deleteMails(request, response);
+        }
+    }
+
+    private static void saveFilterProperties(HttpServletRequest request, HttpServletResponse response)
+            throws IOException
+    {
+        String mailInterval = request.getParameter("mail-life-interval");
+        String refreshInterval = request.getParameter("refresh-interval");
+        if (mailInterval != null && refreshInterval != null)
+        {
+            try
+            {
+                AppProperties.getInstance().setIntProperty(Constants.DAYS_PERIOD,
+                        Integer.parseInt(mailInterval.trim()));
+                AppProperties.getInstance().setIntProperty(Constants.LETTERS_REFRESH_TIME,
+                        Integer.parseInt(refreshInterval.trim()));
+            }
+            catch (Exception e)
+            {
+                response.getWriter().print("fail");
+            }
+            response.getWriter().print("saved");
+        }
+    }
+
+    private static void saveSpeedProperties(HttpServletRequest request, HttpServletResponse response)
+            throws IOException
+    {
+        String symbolPerSec = request.getParameter("symb-per-sec");
+        String imageWatchTime = request.getParameter("image-watch-time");
+        if (symbolPerSec != null && imageWatchTime != null)
+        {
+            try
+            {
+                AppProperties.getInstance().setIntProperty(Constants.SYMB_PER_SEC,
+                        Integer.parseInt(symbolPerSec.trim()));
+                AppProperties.getInstance().setIntProperty(Constants.IMAGE_WATCH_TIME_SEC,
+                        Integer.parseInt(imageWatchTime.trim()));
+
+            }
+            catch (Exception e)
+            {
+                response.getWriter().print("fail");
+            }
+            response.getWriter().print("saved");
+        }
+    }
+
+    private static void markMailAsSpam(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        try
+        {
+            String ids = request.getParameter("selected-mails-id");
+            List<MessageBean> messages = MessagesDataSingleton.getInstance().getMessageData().getMessages();
+            String[] idArr = ids.split(",");
+            for (int i = 0; i < idArr.length; i++)
+            {
+                for (int j = 0; j < messages.size(); j++)
+                {
+                    if (messages.get(j).getMsgId() == Integer.parseInt(idArr[i]))
+                    {
+                        messages.get(j).setSpam(true);
+                        break;
+                    }
+                }
+            }
+            MessagesDataSingleton.getInstance().refreshClassifier();
+            List<MessageBean> spam = MessagesDataSingleton.getInstance().getMessageData().getSpam();
+            String spamIds = "";
+            for (MessageBean messageBean : spam)
+            {
+                spamIds += messageBean.getMsgId() + ",";
+            }
+            spamIds = spamIds.substring(0, spamIds.length() - 1);
+            response.getWriter().print("saved :" + spamIds);
+        }
+        catch (Exception e)
+        {
+            response.getWriter().print("fail");
+        }
+    }
+
+    private static void deleteMails(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        try
+        {
+            String ids = request.getParameter("selected-mails-id");
+            List<MessageBean> messages = MessagesDataSingleton.getInstance().getMessageData().getMessages();
+            String[] idArr = ids.split(",");
+            for (int i = 0; i < idArr.length; i++)
+            {
+                for (int j = 0; j < messages.size(); j++)
+                {
+                    if (messages.get(j).getMsgId() == Integer.parseInt(idArr[i]))
+                    {
+                        messages.remove(j);
+                        break;
+                    }
+                }
+            }
+            response.getWriter().print("saved");
+        }
+        catch (Exception e)
+        {
+            response.getWriter().print("fail");
+        }
+    }
+
 }

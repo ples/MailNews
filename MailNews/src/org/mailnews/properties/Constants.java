@@ -1,10 +1,5 @@
 package org.mailnews.properties;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.lang.reflect.Field;
-import java.util.Properties;
-
 public class Constants {
 
 	public Constants()
@@ -46,6 +41,7 @@ public class Constants {
 	public static final String DAYS_PERIOD = "days-period";
 	public static final String SYMB_PER_SEC = "symb-per-sec";
 	public static final String IMAGE_WATCH_TIME_SEC = "image-watch-time";
-	
+	//OTHER
 	public static final String PROPS_FILE= "props.property";
+	public static final String SPAM = "SPAM";
 }

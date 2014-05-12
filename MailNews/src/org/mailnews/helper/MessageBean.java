@@ -18,6 +18,8 @@ public class MessageBean implements Serializable {
 	private int msgId;
 	private List<String> attachments;
 	private String encoding;
+	private boolean isSpam = false;
+	private boolean ignoreFilter = false;
 
 	public MessageBean(int msgId, String subject, String from, String to,
 			Date receivedDate, String content, boolean isNew,
@@ -116,5 +118,25 @@ public class MessageBean implements Serializable {
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
 	}
+
+    public boolean isSpam()
+    {
+        return isSpam;
+    }
+
+    public void setSpam(boolean isSpam)
+    {
+        this.isSpam = isSpam;
+    }
+
+    public boolean isIgnoreFilter()
+    {
+        return ignoreFilter;
+    }
+
+    public void setIgnoreFilter(boolean ignoreFilter)
+    {
+        this.ignoreFilter = ignoreFilter;
+    }
 
 }
