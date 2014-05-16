@@ -30,6 +30,7 @@ public class NaiveBayesClassifier {
 				maxProbabilityName = eachClass;
 			}
 		}
+		System.out.println(maxProbabilityName + ": " + Math.exp(maxProbability) / summProbability);
 		if( Math.exp(maxProbability) / summProbability < classMinProbability 
 				&& maxProbabilityName.equals(aClassName))
 		{

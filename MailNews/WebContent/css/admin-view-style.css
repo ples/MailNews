@@ -3,7 +3,7 @@ html,body{
 }
 
 
-#mails {
+#mails, #spam {
 	border: 2px;
 	height: 300px;
 	overflow-y: auto;
@@ -17,8 +17,8 @@ html,body{
 	text-align: center;
 }
 
-#mails-buttons button {
-
+#mails-buttons button 
+{
 	background: none repeat scroll 0 0 #F39814;
 	color: white;
 }
@@ -59,4 +59,35 @@ html,body{
 	padding: 0.4em;
 	font-size: 15px;
 	height: auto;
+}
+
+
+#classifier-options > form table, tr {
+    width: 95%;
+}
+
+
+#classifier-options > form td {
+    padding: 40px;
+    width: 45%;
+}
+
+
+#dictionary, textarea {
+    width: 100%;
+    height: 500px;
+    overflow-y: auto;
+    margin: 20px;
+}
+
+#dictionary {
+	background-color: #444444;
+	color: #cccccc;
+}
+
+.buttons button
+{
+	background: none repeat scroll 0 0 #5555fa;
+	color: white;
+	text-align: center;
 }

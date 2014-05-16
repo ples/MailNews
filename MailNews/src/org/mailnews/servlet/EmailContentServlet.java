@@ -31,7 +31,6 @@ import org.mailnews.properties.Constants;
 public class EmailContentServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static List<MessageBean> messages;
-	private static MessageData messageData;
 	private int divWidth;
 	private String[] colors;
 	private int messageNum = 0;
@@ -60,7 +59,6 @@ public class EmailContentServlet extends HttpServlet {
 		
 		try {
 			MessagesDataSingleton.setPath(path);
-			messageData = MessagesDataSingleton.getInstance().getMessageData();
 			divWidth = AppProperties.getInstance().getIntProperty(Constants.DIV_WIDTH);
 			colors = AppProperties.getInstance().getArrayProperty(Constants.COLORS);
 			applicationServerURL = "http://"
@@ -79,7 +77,7 @@ public class EmailContentServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		messages = messageData.getMessages();
+		messages = MessagesDataSingleton.getInstance().getMessages();
 		if (messages == null || messages.size() == 0 || initFail) {
 			response.sendRedirect(applicationServerURL);
 			return;

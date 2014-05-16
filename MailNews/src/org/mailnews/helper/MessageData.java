@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jsoup.Jsoup;
-import org.mailnews.classifier.ClassifierSingleton;
 import org.mailnews.properties.AppProperties;
 import org.mailnews.properties.Constants;
 
@@ -30,6 +28,14 @@ public class MessageData
 
     private void initMessages()
     {
+        if (null == messages || messages.size() == 0)
+        {
+            checkNewMessages = false;
+        }
+        else
+        {
+            checkNewMessages = true;
+        }
         if (updateInProgress)
         {
             return;
@@ -45,6 +51,7 @@ public class MessageData
                             checkNewMessages);
             if (currentMessages.size() == 0)
             {
+                updateInProgress = false;
                 return;
             }
             htmlHelper =
@@ -76,12 +83,8 @@ public class MessageData
             if (checkNewMessages)
             {
                 messages.addAll(currentMessages);
-                for (MessageBean messageBean : currentMessages)
-                {
-                    ClassifierSingleton.getInstance().learn(messageBean.getMsgId(), "HAM",
-                            messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()));
-                }
-                // messages = currentMessages;
+                if(currentMessages.size() > 0)
+                    MessagesDataSingleton.getInstance().refreshClassifier();
             }
             else
             {
@@ -101,6 +104,8 @@ public class MessageData
 
     private void checkForUpdate()
     {
+        System.out.println(AppProperties.getInstance().getIntProperty(
+                Constants.LETTERS_REFRESH_TIME));
         if (System.currentTimeMillis() - lastUpdate > AppProperties.getInstance().getIntProperty(
                 Constants.LETTERS_REFRESH_TIME) * 60000
                 && !updateInProgress)
@@ -119,6 +124,10 @@ public class MessageData
 
     public List<MessageBean> getMessages()
     {
+        if(messages == null)
+        {
+            messages = new ArrayList<MessageBean>();
+        }
         checkForUpdate();
         return messages;
     }

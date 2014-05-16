@@ -1,8 +1,12 @@
 package org.mailnews.classifier;
 
+import org.mailnews.properties.Constants;
+
 public class ClassifierSingleton {
 
 	private static ClassifierSingleton itsClassifier;
+	
+	private String customDictionary = "";
 	
 	public static ClassifierSingleton getInstance()
 	{
@@ -18,6 +22,7 @@ public class ClassifierSingleton {
 	private ClassifierSingleton()
 	{
 		itsLearner = new NaiveBayesLearningAlgorithm();
+		itsLearner.addExample(-1, customDictionary, Constants.SPAM);
 	}
 	
 	public void learn(Integer mailId, String aClass, String aText)
@@ -39,4 +44,19 @@ public class ClassifierSingleton {
 	{
 	    itsLearner.clearDictionary();
 	}
+	
+	public void refreshClassifier()
+	{
+	    itsLearner.refresh();
+	}
+
+    public String getCustomDictionary()
+    {
+        return customDictionary;
+    }
+
+    public void setCustomDictionary(String customDictionary)
+    {
+        this.customDictionary = customDictionary;
+    }
 }

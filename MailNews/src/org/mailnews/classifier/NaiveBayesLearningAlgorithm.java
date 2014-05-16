@@ -24,12 +24,20 @@ public class NaiveBayesLearningAlgorithm
         return model;
     }
 
-    public NaiveBayesClassifier getClassifier()
+    public void refresh()
     {
         model =
                 new NaiveBayesModel(getClassLengths(), getDocCount(), getWordCount(), Integer.valueOf(getDictionary()
                         .size()));
         classifier = new NaiveBayesClassifier(model);
+    }
+    
+    public NaiveBayesClassifier getClassifier()
+    {
+        if(classifier == null)
+        {
+            refresh();
+        }
         return classifier;
     }
 
