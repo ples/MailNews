@@ -66,7 +66,7 @@ public class MessagesDataSingleton
             for (MessageBean msg : messages)
             {
                 String aClass =
-                        classifier.getClass(Constants.SPAM, msg.getSubject() + " " + Jsoup.parse(msg.getContent()),
+                        classifier.getClass(Constants.SPAM, msg.getSubject() + " " + Jsoup.parse(msg.getContent()).text(),
                                 0.8, "HAM");
                 if (!msg.isSpam() && !Constants.SPAM.equals(aClass) || msg.isIgnoreFilter())
                 {
@@ -87,8 +87,16 @@ public class MessagesDataSingleton
         ClassifierSingleton classifier = ClassifierSingleton.getInstance();
         for (MessageBean messageBean : messages)
         {
-            classifier.learn(messageBean.getMsgId(), messageBean.isSpam() ? Constants.SPAM : "HAM",
-                    messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()));
+            if (messageBean.isSpam())
+            {
+                classifier.learn(messageBean.getMsgId(), Constants.SPAM,
+                        messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()).text());
+            }
+            else if (messageBean.isIgnoreFilter())
+            {
+                classifier.learn(messageBean.getMsgId(), "HAM",
+                        messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()).text());
+            }
         }
         classifier.refreshClassifier();
         getWhiteList(messages);

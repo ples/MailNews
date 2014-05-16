@@ -104,8 +104,6 @@ public class MessageData
 
     private void checkForUpdate()
     {
-        System.out.println(AppProperties.getInstance().getIntProperty(
-                Constants.LETTERS_REFRESH_TIME));
         if (System.currentTimeMillis() - lastUpdate > AppProperties.getInstance().getIntProperty(
                 Constants.LETTERS_REFRESH_TIME) * 60000
                 && !updateInProgress)

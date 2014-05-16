@@ -41,7 +41,7 @@ public class NaiveBayesClassifier {
 	
 	public static String[] tokenize(String aText)
 	{
-		String [] words = aText.toLowerCase().split("([^\\w]+)(\\d*)(_*)");
+		String [] words = aText.toLowerCase().split("([^\\p{L}]+)(\\d*)(_*)");
 		return words;
 	}
 	

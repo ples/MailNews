@@ -57,6 +57,6 @@ public class ClassifierSingleton {
 
     public void setCustomDictionary(String customDictionary)
     {
-        this.customDictionary = customDictionary;
+        itsLearner.addExample(-1, customDictionary, Constants.SPAM);
     }
 }
