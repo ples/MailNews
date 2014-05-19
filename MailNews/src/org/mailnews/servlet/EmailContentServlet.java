@@ -1,5 +1,7 @@
 package org.mailnews.servlet;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -18,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.mailnews.helper.HTMLHelper;
 import org.mailnews.helper.MessageBean;
-import org.mailnews.helper.MessageData;
 import org.mailnews.helper.MessagesDataSingleton;
 import org.mailnews.helper.PostRequestHelper;
 import org.mailnews.properties.AppProperties;
@@ -66,6 +67,7 @@ public class EmailContentServlet extends HttpServlet {
 					+ ":"
 					+ getServletContext().getInitParameter(
 							"applicationServerURL");
+			MessagesDataSingleton.getInstance();
 		} catch (Exception e) {
 			initFail=true;
 		}
@@ -77,11 +79,16 @@ public class EmailContentServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
 		messages = MessagesDataSingleton.getInstance().getMessages();
-		if (messages == null || messages.size() == 0 || initFail) {
-			response.sendRedirect(applicationServerURL);
+		if (messages == null || initFail) {
+			response.sendRedirect("error-page.html");
 			return;
 		}
+		if (messages.size() == 0) {
+            response.sendRedirect("no-messages.html");
+            return;
+        }
 
 		if (request.getParameter("next") == null) {
 			messageNum = 0;
@@ -175,7 +182,6 @@ public class EmailContentServlet extends HttpServlet {
 				partNum = messages.get(messageNum).getContentParts().length-1;
 				colorNum = (colorNum + 1) % colors.length;
 			}
-			
 		}
 		StringBuilder meta = new StringBuilder();
 
@@ -232,6 +238,36 @@ public class EmailContentServlet extends HttpServlet {
 		}
 		if(request.getParameter("admin-command") != null)
 		{
+//		    if(!MessagesDataSingleton.getInstance().isInitialized() && 
+//		            ("refresh-mails".equals(request.getParameter("admin-command")) 
+//		                    || "refresh-spam".equals(request.getParameter("admin-command")) ))
+//		    {
+//		        AsyncContext aTmpContext = request.startAsync(request, response);
+//	            aTmpContext.addListener(new AsyncListener() {
+//	                
+//	                @Override
+//	                public void onTimeout(AsyncEvent arg0) throws IOException {
+//	                    anAdminContexts.remove(arg0.getAsyncContext());
+//	                }
+//	                
+//	                @Override
+//	                public void onStartAsync(AsyncEvent arg0) throws IOException {
+//	                    MessagesDataSingleton.getInstance().setListener(new MyActionListener(arg0.getAsyncContext()));
+//	                }
+//	                
+//	                @Override
+//	                public void onError(AsyncEvent arg0) throws IOException {
+//	                    anAdminContexts.remove(arg0.getAsyncContext());
+//	                }
+//	                
+//	                @Override
+//	                public void onComplete(AsyncEvent arg0) throws IOException {
+//	                    anAdminContexts.remove(arg0.getAsyncContext());
+//	                }
+//	            });
+//	            aTmpContext.setTimeout(isStoped ? Integer.MAX_VALUE :Integer.parseInt((request.getParameter("time"))));
+//	            aClientContexts.add(aTmpContext);
+//		    }
 			PostRequestHelper.processAdminPostRequest(request, response);
 		}
 		String param = request.getParameter("notifier-command");
@@ -325,6 +361,29 @@ public class EmailContentServlet extends HttpServlet {
 				.append("</div>");
 	}
 	
-	
+	class MyActionListener implements ActionListener
+    {
+        
+        private AsyncContext ctx;
+        
+        public MyActionListener(AsyncContext aCtx)
+        {
+            super();
+            this.ctx = aCtx;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            try
+            {
+                PostRequestHelper.processAdminPostRequest((HttpServletRequest)ctx.getRequest(), (HttpServletResponse)ctx.getResponse());
+            }
+            catch (IOException e1)
+            {
+                e1.printStackTrace();
+            }
+        }
+    }
 
 }

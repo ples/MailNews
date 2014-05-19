@@ -12,7 +12,7 @@ import org.mailnews.properties.Constants;
 
 public class PostRequestHelper
 {
-
+    
     public static void processAdminPostRequest(HttpServletRequest request, HttpServletResponse response)
             throws IOException
     {
@@ -58,11 +58,17 @@ public class PostRequestHelper
     private static void saveClassifierDictionary(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         response.setCharacterEncoding("UTF-8");
-        String newWords = request.getParameter("new-dictionary");
+        String newWords = request.getParameter("new-words");
         if( null != newWords )
         {
-            System.out.println(newWords);
-            ClassifierSingleton.getInstance().setCustomDictionary(newWords);
+            if ("spam".equals(request.getParameter("dictionary-class")))
+            {
+                ClassifierSingleton.getInstance().setCustomSpamDictionary(newWords);
+            }
+            else
+            {
+                ClassifierSingleton.getInstance().setCustomHamDictionary(newWords);
+            }
             MessagesDataSingleton.getInstance().refreshClassifier();
             response.getWriter().print("saved");
         }
@@ -263,6 +269,7 @@ public class PostRequestHelper
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             response.getWriter().print("fail");
         }
     }

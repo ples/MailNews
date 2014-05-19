@@ -1,5 +1,6 @@
 package org.mailnews.helper;
 
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,11 @@ public class MessagesDataSingleton
     private MessageData itsMessageData;
 
     private static String itsPath;
+    
+    private boolean isInitialized = false;
 
+    private List<ActionListener> listeners = new ArrayList<ActionListener>();
+    
     public MessageData getMessageData()
     {
         return itsMessageData;
@@ -24,12 +29,19 @@ public class MessagesDataSingleton
 
     private MessagesDataSingleton()
     {
+
+    }
+    
+    private void init()
+    {
+        isInitialized = false;
         if (itsPath == null)
         {
             itsPath = new File("").getAbsolutePath();
         }
         itsMessageData = new MessageData(itsPath);
         defaultLearn(getMessages());
+        isInitialized = true;
     }
 
     public static MessagesDataSingleton getInstance()
@@ -37,6 +49,10 @@ public class MessagesDataSingleton
         if (instance == null)
         {
             instance = new MessagesDataSingleton();  
+        }
+        if( !instance.isInitialized)
+        {
+            instance.init();
         }
         return instance;
     }
@@ -90,7 +106,7 @@ public class MessagesDataSingleton
             if (messageBean.isSpam())
             {
                 classifier.learn(messageBean.getMsgId(), Constants.SPAM,
-                        messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()).text());
+                       messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()).text());
             }
             else if (messageBean.isIgnoreFilter())
             {
@@ -98,7 +114,28 @@ public class MessagesDataSingleton
                         messageBean.getSubject() + " " + Jsoup.parse(messageBean.getContent()).text());
             }
         }
+        
         classifier.refreshClassifier();
         getWhiteList(messages);
+    }
+
+    public boolean isInitialized()
+    {
+        return isInitialized;
+    }
+
+    public void setInitialized(boolean isInitialized)
+    {
+        this.isInitialized = isInitialized;
+        for(ActionListener listener : listeners)
+        {
+            listener.actionPerformed(null);
+        }
+        listeners.clear();
+    }
+    
+    public void setListener(ActionListener listener)
+    {
+        listeners.add(listener);
     }
 }

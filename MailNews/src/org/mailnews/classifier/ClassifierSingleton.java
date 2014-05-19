@@ -6,7 +6,9 @@ public class ClassifierSingleton {
 
 	private static ClassifierSingleton itsClassifier;
 	
-	private String customDictionary = "";
+	private String customSpamDictionary = "";
+	
+	private String customHamDictionary = "";
 	
 	public static ClassifierSingleton getInstance()
 	{
@@ -22,7 +24,8 @@ public class ClassifierSingleton {
 	private ClassifierSingleton()
 	{
 		itsLearner = new NaiveBayesLearningAlgorithm();
-		itsLearner.addExample(-1, customDictionary, Constants.SPAM);
+		itsLearner.addExample(-1, " the word", Constants.SPAM);
+		itsLearner.addExample(-2, "the word", "HAM");
 	}
 	
 	public void learn(Integer mailId, String aClass, String aText)
@@ -50,13 +53,25 @@ public class ClassifierSingleton {
 	    itsLearner.refresh();
 	}
 
-    public String getCustomDictionary()
+    public String getCustomSpamDictionary()
     {
-        return customDictionary;
+        return customSpamDictionary;
     }
 
-    public void setCustomDictionary(String customDictionary)
+    public void setCustomSpamDictionary(String customDictionary)
     {
+        this.customSpamDictionary = customDictionary;
         itsLearner.addExample(-1, customDictionary, Constants.SPAM);
+    }
+
+    public String getCustomHamDictionary()
+    {
+        return customHamDictionary;
+    }
+
+    public void setCustomHamDictionary(String customHamDictionary)
+    {
+        this.customHamDictionary = customHamDictionary;
+        itsLearner.addExample(-2, customHamDictionary, "HAM");
     }
 }

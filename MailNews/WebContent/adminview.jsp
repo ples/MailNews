@@ -1,4 +1,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@page import="org.mailnews.classifier.ClassifierSingleton"%>
+<%@page import="org.mailnews.properties.Constants"%>
+<%@page import="org.mailnews.properties.AppProperties"%>
+<%
+    response.setCharacterEncoding("UTF-8");
+			if (!AppProperties.isInitialized()) {
+				AppProperties.getInstance()
+						.loadFromFile(
+								getServletContext().getRealPath("/")
+										+ "props.property");
+			}
+%>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -32,12 +44,16 @@
 				<table>
 					<tr>
 						<td>Time interval:</td>
-						<td><input name="mail-life-interval" type="text" size="5" /></td>
+						<td><input name="mail-life-interval" type="text" size="5"
+							value="<%=AppProperties.getInstance().getIntProperty(
+					Constants.DAYS_PERIOD)%>" /></td>
 						<td>days.</td>
 					</tr>
 					<tr>
 						<td>Refresh interval:</td>
-						<td><input name="refresh-interval" type="text" size="5" /></td>
+						<td><input name="refresh-interval" type="text" size="5"
+							value="<%=AppProperties.getInstance().getIntProperty(
+					Constants.LETTERS_REFRESH_TIME)%>" /></td>
 						<td>minutes.</td>
 					</tr>
 				</table>
@@ -51,12 +67,16 @@
 				<table>
 					<tr>
 						<td>Symbols per second:</td>
-						<td><input name="symb-per-sec" type="text" size="5" /></td>
+						<td><input name="symb-per-sec" type="text" size="5"
+							value="<%=AppProperties.getInstance().getIntProperty(
+					Constants.SYMB_PER_SEC)%>" /></td>
 						<td>symbols</td>
 					</tr>
 					<tr>
 						<td>Image watch time:</td>
-						<td><input name="image-watch-time" type="text" size="5" /></td>
+						<td><input name="image-watch-time" type="text" size="5"
+							value="<%=AppProperties.getInstance().getIntProperty(
+					Constants.IMAGE_WATCH_TIME_SEC)%>" /></td>
 						<td>seconds</td>
 					</tr>
 				</table>
@@ -69,6 +89,10 @@
 		-->
 		<div id="mail-manager">
 			<div id="mails">
+				<div id="mails-init"
+					style="display: block; width: 100%; text-align: center; margin-top: 5%;">
+					<h2>Initializing...</h2>
+				</div>
 				<ol id="subjects">
 
 				</ol>
@@ -79,8 +103,8 @@
 						name="selected-mails-id"> <input id="command"
 						name="admin-command" value="" type="hidden">
 					<button type="submit"
-						onclick="$('#command').attr('value','spam-mark')">Mark
-						as SPAM</button>
+						onclick="$('#command').attr('value','spam-mark')">Mark as
+						SPAM</button>
 					<button type="submit"
 						onclick="$('#command').attr('value','delete-mail')">Delete</button>
 					<button type="submit"
@@ -94,6 +118,10 @@
 		-->
 		<div id="spam-manager">
 			<div id="spam">
+				<div id="spam-init"
+					style="display: block; width: 100%; text-align: center; margin-top: 5%;">
+					<h2>Initializing...</h2>
+				</div>
 				<ol id="spam-subjects">
 
 				</ol>
@@ -116,27 +144,41 @@
 		</div>
 		<div id="classifier-options">
 			<form id="classifier-form" action="" method="post">
-				<input type="hidden" id="new-dictionary-id" name="new-dictionary"/>
-				<input id="spam-command"
-						name="admin-command" value="classifier-save" type="hidden"/>
+				<input type="hidden" id="new-dictionary-spam" name="new-dictionary" 
+				value="<%=ClassifierSingleton.getInstance().getCustomSpamDictionary()%>"/>
+				<input type="hidden" id="new-dictionary-ham" name="new-dictionary" 
+				value="<%=ClassifierSingleton.getInstance().getCustomHamDictionary()%>"/>
+				<input id="spam-command" name="admin-command"
+					value="classifier-save" type="hidden" />
 				<table>
 					<tr>
 						<td>
-							<p>Add new words into dictionamry:</p> <textarea id="words-to-add"></textarea>
-							<div class="buttons">
-								<button onclick="onAddClick()">Add</button>
+							<div>
+								Add new words into dictionamry: 
+								&nbsp; SPAM &nbsp; 
+								<input id="spam-radio" type="radio" name="dictionary-class" value="spam" checked="checked"
+								 onclick="onSpamRadioClick()"/> 
+								&nbsp; HAM &nbsp; 
+								<input id="ham-radio" type="radio" name="dictionary-class" value="ham"
+								 onclick="onHamRadioClick()"/>
 							</div>
 						</td>
+					</tr>
+					<tr id="spam-dictionary">
 						<td>
-							<p> Existing dictionary: </p>
+							<p>Existing dictionary:</p>
 							<div id="dictionary-container">
-								<div id="dictionary" style="display: block;"></div>
-								<textarea id="edit-dictionary-area" name="new-words" style="display: none"></textarea>
+								<div id="dictionary" style="display: block;"><%=ClassifierSingleton.getInstance().getCustomSpamDictionary()%></div>
+								<textarea id="edit-dictionary-area" name="new-words"
+									style="display: none"></textarea>
 							</div>
 							<div class="buttons">
-								<button id="edit-dictionary-button" onclick="onEditClick()" type="button">Edit</button>
-								<button id="save-dictionary-button" onclick="onSaveClick()" style="display: none;">Save</button>
-								<button id="cancel-edit" onclick="onCancelClick()" type="button" style="display: none;">Cancel</button>
+								<button id="edit-dictionary-button" onclick="onEditClick()"
+									type="button">Edit</button>
+								<button id="save-dictionary-button" onclick="onSaveClick()"
+									style="display: none;">Save</button>
+								<button id="cancel-edit" onclick="onCancelClick()" type="button"
+									style="display: none;">Cancel</button>
 							</div>
 						</td>
 					</tr>

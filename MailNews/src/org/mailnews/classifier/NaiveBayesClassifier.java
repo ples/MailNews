@@ -1,6 +1,8 @@
 package org.mailnews.classifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class NaiveBayesClassifier {
@@ -41,18 +43,25 @@ public class NaiveBayesClassifier {
 	
 	public static String[] tokenize(String aText)
 	{
-		String [] words = aText.toLowerCase().split("([^\\p{L}]+)(\\d*)(_*)");
-		return words;
+		List<String> words =new ArrayList<String>(Arrays.asList(aText.toLowerCase().split("([^\\p{L}]+)(\\d*)(_*)")));
+		if (words.size()!=0 && "".equals(words.get(0)))
+		{
+		    words.remove(0);
+		}
+		return words.toArray(new String[words.size()]);
 	}
 	
 	public double calculateProbability(String aClass, String aText)
 	{
 		String[] words = tokenize(aText);
 		double summaryProbability = 0.0;
+		System.out.print(aClass+": ");
 		for(String eachWord : words)
 		{
+		    System.out.print(String.format("%.2f", model.wordLogProbability(aClass, eachWord))+", ");
 			summaryProbability += model.wordLogProbability(aClass, eachWord);
 		}
+		System.out.println(" Class log: " + model.classLogProbability(aClass));
 		return summaryProbability + model.classLogProbability(aClass);
 	}
 }

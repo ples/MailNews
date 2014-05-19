@@ -54,77 +54,79 @@ function onSpeedComplete(aResponse)
 
 function onManagerComplete(aResponse)
 {
-	var spamSubjectsNode = $("#spam-subjects");
-	var spamContentNode = $("#spam-content");
-	if(aResponse.indexOf("saved") != -1)
-	{
-		noty({text: 'SAVED!'});
-		var idsStr = $("#selected-mails-input").attr("value");
-		if (aResponse.indexOf(":") != -1)
-		{
-			idsStr += "," + aResponse.split(":")[1];
-		}
-
-		var ids = idsStr.split(",");
-		for ( var i = 0; i < ids.length; i++)
-		{
-			var subject = $("#"+ ids[i]);
-			var content = $("#"+ ids[i] + "-content");
-			subject.detach();
-			content.detach();
-			if (aResponse.indexOf(":") != -1)
-			{
-				spamSubjectsNode.append(subject);
-				spamContentNode.append(content);
-			} else
-			{
-				subject.remove();
-				content.remove();
-			}
-
-		}
-	}
-	else
-		if(aResponse.indexOf("refresh-result:")!=-1)
-		{
-			refreshMails(aResponse);
-		}
+	refreshAll();
+//	var spamSubjectsNode = $("#spam-subjects");
+//	var spamContentNode = $("#spam-content");
+//	if(aResponse.indexOf("saved") != -1)
+//	{
+//		noty({text: 'SAVED!'});
+//		var idsStr = $("#selected-mails-input").attr("value");
+//		if (aResponse.indexOf(":") != -1)
+//		{
+//			idsStr += "," + aResponse.split(":")[1];
+//		}
+//
+//		var ids = idsStr.split(",");
+//		for ( var i = 0; i < ids.length; i++)
+//		{
+//			var subject = $("#"+ ids[i]);
+//			var content = $("#"+ ids[i] + "-content");
+//			subject.detach();
+//			content.detach();
+//			if (aResponse.indexOf(":") != -1)
+//			{
+//				spamSubjectsNode.append(subject);
+//				spamContentNode.append(content);
+//			} else
+//			{
+//				subject.remove();
+//				content.remove();
+//			}
+//
+//		}
+//	}
+//	else
+//		if(aResponse.indexOf("refresh-result:")!=-1)
+//		{
+//			refreshMails(aResponse);
+//		}
 }
 
 
 
 function onSpamManagerComplete(aResponse)
 {
-	var mailSubjectsNode = $("#subjects");
-	var mailContentNode = $("#mails-content");
-	if(aResponse.indexOf("saved") != -1)
-	{
-		noty({text: 'SAVED!'});
-		var idsStr = $("#selected-spam-input").attr("value");
-		var ids = idsStr.split(",");
-		for ( var i = 0; i < ids.length; i++)
-		{
-			var subject = $("#"+ ids[i]);
-			var content = $("#"+ ids[i] + "-content");
-			subject.detach();
-			content.detach();
-			if(aResponse.indexOf("deleted") != -1)
-			{
-				subject.remove();
-				content.remove();
-			} else
-			{
-				mailSubjectsNode.append(subject);
-				mailContentNode.append(content);
-			}
-
-		}
-	}
-	else
-		if(aResponse.indexOf("refresh-result:")!=-1)
-		{
-			refreshSpam(aResponse);
-		}
+	refreshAll();
+//	var mailSubjectsNode = $("#subjects");
+//	var mailContentNode = $("#mails-content");
+//	if(aResponse.indexOf("saved") != -1)
+//	{
+//		noty({text: 'SAVED!'});
+//		var idsStr = $("#selected-spam-input").attr("value");
+//		var ids = idsStr.split(",");
+//		for ( var i = 0; i < ids.length; i++)
+//		{
+//			var subject = $("#"+ ids[i]);
+//			var content = $("#"+ ids[i] + "-content");
+//			subject.detach();
+//			content.detach();
+//			if(aResponse.indexOf("deleted") != -1)
+//			{
+//				subject.remove();
+//				content.remove();
+//			} else
+//			{
+//				mailSubjectsNode.append(subject);
+//				mailContentNode.append(content);
+//			}
+//
+//		}
+//	}
+//	else
+//		if(aResponse.indexOf("refresh-result:")!=-1)
+//		{
+//			refreshSpam(aResponse);
+//		}
 }
 
 function refreshSpam(aResponse)
@@ -162,6 +164,7 @@ function refreshAll()
 
 	myRequest.done(function (response, textStatus, jqXHR){
 		refreshMails(response);
+		$("#mails-init").css("display","none");
 	});
 
 	myRequest.fail(function (jqXHR, textStatus, errorThrown){
@@ -183,6 +186,7 @@ function refreshAll()
 
 	mySpamRequest.done(function (response, textStatus, jqXHR){
 		refreshSpam(response);
+		$("#spam-init").css("display","none");
 	});
 
 	mySpamRequest.fail(function (jqXHR, textStatus, errorThrown){
@@ -220,7 +224,14 @@ function onCancelClick()
 
 function onSaveClick()
 {
-	$("#new-dictionary-id").val($("#edit-dictionary-area").val());
+	if($('input[name=dictionary-class]:checked', '#classifier-form').val() == "spam")
+	{
+		$("#new-dictionary-spam").val($("#edit-dictionary-area").val());
+	}
+	else
+	{
+		$("#new-dictionary-ham").val($("#edit-dictionary-area").val());
+	}
 	$("#dictionary").text($("#edit-dictionary-area").val());
 }
 
@@ -235,6 +246,7 @@ function onClassifierComplete(aResponse)
 		$("#save-dictionary-button").css("display","none");
 		$("#cancel-edit").css("display","none");
 		$("#edit-dictionary-button").css("display","inline");
+		refreshAll();
 	}
 	else
 	{
@@ -242,10 +254,15 @@ function onClassifierComplete(aResponse)
 	}
 }
 
-function onAddClick()
+
+function onSpamRadioClick()
 {
-	$("#dictionary").text(
-			$("#dictionary").text() +" " + $("#words-to-add").val());
-	$("#new-dictionary-id").val(
-			$("#new-dictionary-id").val() +" " + $("#words-to-add").val());
+	$("#dictionary").text($("#new-dictionary-spam").val());
+	$("#edit-dictionary-area").val($("#new-dictionary-spam").val());
+}
+
+function onHamRadioClick()
+{
+	$("#dictionary").text($("#new-dictionary-ham").val());
+	$("#edit-dictionary-area").val($("#new-dictionary-ham").val());
 }

@@ -21,7 +21,7 @@
         <url-pattern>*.jpg</url-pattern>
         <url-pattern>*.JPG</url-pattern>    
         <url-pattern>*.swf</url-pattern>  
-        <url-pattern>*.htmlt</url-pattern>  
+        <url-pattern>*.html</url-pattern>  
         <url-pattern>*.htm</url-pattern>  
     </servlet-mapping>  
   <servlet>
