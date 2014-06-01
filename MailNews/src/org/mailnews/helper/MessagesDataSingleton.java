@@ -29,7 +29,7 @@ public class MessagesDataSingleton
 
     private MessagesDataSingleton()
     {
-
+        
     }
     
     private void init()

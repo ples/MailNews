@@ -11,7 +11,8 @@
 <%String url =  "http://"+InetAddress.getLocalHost().getHostAddress() + ":8080" + getServletContext().getContextPath()+"/mail"; %>
 </head>
 <body style="width: 100%; height: 100%;">
-	<div id="notifier">
+	<div id="notifier" style="width: 100%; height: 100%;">
+	<div>
 		<table>
 			<tr>
 				<td><button class="button-stop"
@@ -30,6 +31,7 @@
 				</button></td>
 			</tr>
 		</table>
+		</div>
 	</div>
 
 </body>

@@ -10,7 +10,9 @@ import org.mailnews.properties.Constants;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,6 +24,8 @@ public class MailHelper
     static private String PATH = null;
     static private AtomicInteger attachmentId = new AtomicInteger(0);
     static private String[] attachmentFormats = {"jpg", "jpeg", "png", "gif"};
+    
+    static private Map<String, String> tempFileMap = new HashMap<String, String>(); 
 
     public static ArrayList<MessageBean> receiveMessage(String user, String password, String host, String port,
             String storeProtocol, String path, boolean checkNewMessages) throws Exception
@@ -78,6 +82,7 @@ public class MailHelper
         ArrayList<MessageBean> listMessages = new ArrayList<MessageBean>();
         for (Message inMessage : messages)
         {
+            tempFileMap.clear();
             try
             {
                 List<String> attachments = null;
@@ -100,7 +105,10 @@ public class MailHelper
                                     getFrom(inMessage.getFrom()), null, inMessage.getReceivedDate(), null, false,
                                     null, inMessage.getContentType());
                     processMultipartBody(mp, message, attachments);
-
+                    for(String eachFile : tempFileMap.keySet())
+                    {
+                        message.setContent(message.getContent().replaceAll(eachFile, tempFileMap.get(eachFile)));
+                    }
                     listMessages.add(message);
                 }
             }
@@ -140,6 +148,7 @@ public class MailHelper
                     if (attachments == null)
                         attachments = new ArrayList<String>();
                     String newFile = saveFile(MimeUtility.decodeText(part.getFileName()), part.getInputStream());
+                    tempFileMap.put(MimeUtility.decodeText(part.getFileName()), newFile);
                     if (newFile == null)
                     {
                         continue;

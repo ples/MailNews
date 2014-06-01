@@ -311,7 +311,6 @@ public class EmailContentServlet extends HttpServlet {
 				aClientContext.complete();
 			}
 		}
-		
 	}
 
 	private int getTime(String div) {
@@ -340,10 +339,9 @@ public class EmailContentServlet extends HttpServlet {
 		html.append("<table id='tab-head'><tr id=\"header-text\"><td style=\"width:"
 				+ (int) (divWidth * (1 - header_cur_mail_ratio)) + "px;background-color:").
 				append(colors[colorNum]).append("\">");
-		html.append("<div  ")
-				.append(">");
+		//html.append("<div>  ");
 		html.append(messages.get(messageNum).getSubject());
-		html.append("</div>");
+		//html.append("</div>");
 		html.append(
 				"</td><td style=\"width:"
 						+ (int) (divWidth * header_cur_mail_ratio)
@@ -356,9 +354,9 @@ public class EmailContentServlet extends HttpServlet {
 	private void addDivCurrentMail(StringBuilder html) {
 		html
 				.append("<img src=\"img/mail_new.png\">")
-				.append("<div>")
-				.append((messageNum + 1) + "\\" + messages.size())
-				.append("</div>");
+				//.append("<div>")
+				.append((messageNum + 1) + "\\" + messages.size());
+				//.append("</div>");
 	}
 	
 	class MyActionListener implements ActionListener

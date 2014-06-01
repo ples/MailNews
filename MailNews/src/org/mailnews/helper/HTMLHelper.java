@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.imageio.ImageIO;
 
@@ -20,6 +23,9 @@ import org.jsoup.select.Elements;
 
 public class HTMLHelper
 {
+    public static final String IMG_TAG_PATTERN = "(#img\\[)([\\w]+\\.[\\w]+)(\\]#)";
+    public static final int IMG_WIDTH_INDEX = 0;
+    public static final int IMG_HEIGHT_INDEX = 1;
     private int fontSize;
     private int spacing;
     private int fontHeaderSize;
@@ -163,161 +169,7 @@ public class HTMLHelper
         return widths;
     }
 
-    public String[] splitContent(String content, List<String> attachments, String type)
-    {
-        content = removeLotusAddings(content);
-        document = Jsoup.parse(content);
-        if (attachments == null)
-            attachments = new ArrayList<String>();
-        Elements p_tags = new Elements();
-        
-        removeImgTags(path,attachments);
-        if ("plain".equals(type))
-        {
-            parsePlainText(p_tags, content);
-        }
-        else
-        {
-            parseHtmlText(p_tags);
-        }
-        
-        Elements divs = new Elements();
-        
-        int attachmentCount = 0;
-        int pCount = 0;
-        Element div = document.createElement("div");
-        boolean imgFloat = true;
-        int height = marginText;
-        while (attachmentCount < attachments.size() || pCount < p_tags.size())
-        {
-            if (attachments.size() > attachmentCount)
-            {
-                String att = attachments.get(attachmentCount);
-                int[] size = getNormalizedImageSize(getImageSize(att));
-                Element img = getImgElem(att, imgFloat ? "left" : "right", size);
-                size[0] += 2 * marginImg;
-                size[1] += 2 * marginImg;
-                int imgHeight = size[1];
-                int imgWidth = size[0];
-                imgFloat = !imgFloat;
-
-                if (size[1] + height < divHeight)
-                    size[1] += height;
-                else
-                {
-                    div = saveDiv(divs, div);
-                    height = pCount < p_tags.size() ? marginText : 0;
-                    continue;
-                }
-
-                if (pCount >= p_tags.size())
-                {
-                    int imgAdded = addImages(div, height, attachments, attachmentCount);
-                    if (imgAdded > 0)
-                    {
-                        attachmentCount += imgAdded;
-                    }
-                    div = saveDiv(divs, div);
-                    height = 0;
-                    continue;
-                }
-                else
-                {
-                    div.appendChild(img);
-                }
-                while (pCount < p_tags.size())
-                {
-                    int strHeight = 0;
-                    if ("p".equals(p_tags.get(pCount).tagName()))
-                    {
-                        String pText = p_tags.get(pCount).text();
-                        strHeight = getStringHeight(pText, makeWidthsArray(imgWidth, imgHeight), 0);
-                    }
-                    else if ("table".equals(p_tags.get(pCount).tagName()))
-                    {
-                        strHeight = appendTable(p_tags, pCount, height, makeWidthsArray(imgWidth, imgHeight));
-                    }
-                    else
-                    {
-                        strHeight = getListHeight(p_tags.get(pCount), makeWidthsArray(imgWidth, imgHeight));
-                    }
-                    if ((height + strHeight) >= divHeight)
-                    {
-                        div = saveDiv(divs, div);
-                        height = 0;
-                        break;
-                    }
-                    else
-                    {
-                        height += strHeight + marginText;
-                        div.appendChild(p_tags.get(pCount));
-                        pCount++;
-                    }
-                    if (size[1] < height)
-                    {
-                        if (pCount >= p_tags.size())
-                            div = saveDiv(divs, div);
-                        break;
-                    }
-                    else
-                    {
-                        imgHeight -= (strHeight - marginText);
-                        if (pCount >= p_tags.size())
-                        {
-                            height = divHeight;
-                        }
-                    }
-                }
-                attachmentCount++;
-            }
-            else
-            {
-                int strHeight = 0;
-                int[][] widths = makeWidthsArray(0, 0);
-                if ("p".equals(p_tags.get(pCount).tagName()))
-                {
-                    String pText = p_tags.get(pCount).text();
-                    strHeight = getStringHeight(pText, widths, 0);
-                }
-                else if ("table".equals(p_tags.get(pCount).tagName()))
-                {
-                    strHeight = appendTable(p_tags, pCount, height, widths);
-                }
-                else
-                {
-                    strHeight = getListHeight(p_tags.get(pCount), widths);
-                }
-                if ((height + strHeight) >= divHeight)
-                {
-                    div = saveDiv(divs, div);
-                    height = marginText;
-                    continue;
-                }
-                else
-                {
-                    height += strHeight + marginText;
-                    div.appendChild(p_tags.get(pCount));
-                }
-                pCount++;
-                if (pCount >= p_tags.size())
-                {
-                    div = saveDiv(divs, div);
-                    height = 0;
-                }
-            }
-        } // END MAIN WHILE
-
-        if (div.children().size() > 0)
-        {
-            saveDiv(divs, div);
-        }
-        String[] retDivs = new String[divs.size()];
-        for (int i = 0; i < divs.size(); i++)
-        {
-            retDivs[i] = divs.get(i).toString();
-        }
-        return retDivs;
-    }
+    
 
     private int appendTable(Elements p_tags, int pCount, int height, int[][] widths)
     {
@@ -348,11 +200,10 @@ public class HTMLHelper
         return div;
     }
 
-    private int addImages(Element div, int beginHeight, List<String> attachments, int beginAttachIndex)
+    private int[] addImages(Element div, int beginHeight, List<String> attachments, int beginAttachIndex)
     {
         Element imgContainer = document.createElement("div");
-        imgContainer.attr("style", "text-align: center; font: initial;");
-        imgContainer.attr("id", "photo-gallery");
+        
         int imgDivHeight = 0;
         int imgDivWidth = 0;
         int maxHeight = 0;
@@ -380,9 +231,12 @@ public class HTMLHelper
         }
         if (imgAdded > 0)
         {
+            imgContainer.attr("style", "text-align: center; font: initial; height: " + (maxHeight + imgDivHeight) + "px;");
+            imgContainer.attr("id", "photo-gallery");
             div.appendChild(imgContainer);
         }
-        return imgAdded;
+        System.out.println("DivHeight: " + imgDivHeight + maxHeight);
+        return new int[]{imgAdded,(maxHeight + imgDivHeight)};
     }
 
     private int[] getImgSizeForGalery(int[] size)
@@ -789,5 +643,372 @@ public class HTMLHelper
         String pattern = "(\\(See attached file:.*?\\))";
         content = content.replaceAll(pattern, "");
         return content;
+    }
+    
+    private boolean contentHasAppTags(String content)
+    {
+        Pattern pattern = Pattern.compile(IMG_TAG_PATTERN);
+        Matcher matcher = pattern.matcher(content);
+        if(matcher.find())
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public String[] getContent(String content, List<String> attachments, String type)
+    {
+        if(contentHasAppTags(content))
+        {
+            return splitContentWithTags(content, attachments, type);
+        }
+        else
+        {
+            return splitContent(content, attachments, type);
+        }
+    }
+
+    private Elements convertTagsToHtml(Elements p_tags)
+    {
+        for(int i = 0; i < p_tags.size(); i++)
+        {
+            Element eachTag = p_tags.get(i);
+            if(contentHasAppTags(eachTag.text()))
+            {
+                String html = eachTag.outerHtml();
+                Pattern pattern = Pattern.compile(IMG_TAG_PATTERN);
+                Matcher matcher = pattern.matcher(html);
+                while (matcher.find())
+                {
+                    String tag = matcher.group(0);
+                    String file = matcher.group(2);
+                    html = html.replace(tag, "</p><img src=\"" + file + "\"><p>");
+                }
+                
+                p_tags.remove(i);
+                Elements newElements = Jsoup.parse(html).getElementsByTag("body").get(0).children();
+                for (int j = 0; j < newElements.size(); j++)
+                {
+                    if( "p".equals(newElements.get(j).tagName()) 
+                            && "".equals(newElements.get(j).text().replaceAll(" ", "")))
+                    {
+                        newElements.remove(j);
+                    }
+                }
+                p_tags.addAll(i, newElements);
+                i+=newElements.size()-1;
+            }
+        }
+        return p_tags;
+    }
+    
+    public String[] splitContent(String content, List<String> attachments, String type)
+    {
+        content = removeLotusAddings(content);
+        document = Jsoup.parse(content);
+        if (attachments == null)
+            attachments = new ArrayList<String>();
+        Elements p_tags = new Elements();
+        
+        removeImgTags(path,attachments);
+        if ("plain".equals(type))
+        {
+            parsePlainText(p_tags, content);
+        }
+        else
+        {
+            parseHtmlText(p_tags);
+        }
+        
+        Elements divs = new Elements();
+        
+        int attachmentCount = 0;
+        int pCount = 0;
+        Element div = document.createElement("div");
+        boolean imgFloat = true;
+        int height = marginText;
+        while (attachmentCount < attachments.size() || pCount < p_tags.size())
+        {
+            if (attachments.size() > attachmentCount)
+            {
+                String att = attachments.get(attachmentCount);
+                int[] size = getNormalizedImageSize(getImageSize(att));
+                Element img = getImgElem(att, imgFloat ? "left" : "right", size);
+                size[0] += 2 * marginImg;
+                size[1] += 2 * marginImg;
+                int imgHeight = size[1];
+                int imgWidth = size[0];
+                imgFloat = !imgFloat;
+
+                if (size[1] + height < divHeight)
+                    size[1] += height;
+                else
+                {
+                    div = saveDiv(divs, div);
+                    height = pCount < p_tags.size() ? marginText : 0;
+                    continue;
+                }
+
+                if (pCount >= p_tags.size())
+                {
+                    int imgAdded = addImages(div, height, attachments, attachmentCount)[0];
+                    if (imgAdded > 0)
+                    {
+                        attachmentCount += imgAdded;
+                    }
+                    div = saveDiv(divs, div);
+                    height = 0;
+                    continue;
+                }
+                else
+                {
+                    div.appendChild(img);
+                }
+                while (pCount < p_tags.size())
+                {
+                    int strHeight = 0;
+                    if ("p".equals(p_tags.get(pCount).tagName()))
+                    {
+                        String pText = p_tags.get(pCount).text();
+                        strHeight = getStringHeight(pText, makeWidthsArray(imgWidth, imgHeight), 0);
+                    }
+                    else if ("table".equals(p_tags.get(pCount).tagName()))
+                    {
+                        strHeight = appendTable(p_tags, pCount, height, makeWidthsArray(imgWidth, imgHeight));
+                    }
+                    else
+                    {
+                        strHeight = getListHeight(p_tags.get(pCount), makeWidthsArray(imgWidth, imgHeight));
+                    }
+                    if ((height + strHeight) >= divHeight)
+                    {
+                        div = saveDiv(divs, div);
+                        height = 0;
+                        break;
+                    }
+                    else
+                    {
+                        height += strHeight + marginText;
+                        div.appendChild(p_tags.get(pCount));
+                        pCount++;
+                    }
+                    if (size[1] < height)
+                    {
+                        if (pCount >= p_tags.size())
+                            div = saveDiv(divs, div);
+                        break;
+                    }
+                    else
+                    {
+                        imgHeight -= (strHeight - marginText);
+                        if (pCount >= p_tags.size())
+                        {
+                            height = divHeight;
+                        }
+                    }
+                }
+                attachmentCount++;
+            }
+            else
+            {
+                int strHeight = 0;
+                int[][] widths = makeWidthsArray(0, 0);
+                if ("p".equals(p_tags.get(pCount).tagName()))
+                {
+                    String pText = p_tags.get(pCount).text();
+                    strHeight = getStringHeight(pText, widths, 0);
+                }
+                else if ("table".equals(p_tags.get(pCount).tagName()))
+                {
+                    strHeight = appendTable(p_tags, pCount, height, widths);
+                }
+                else
+                {
+                    strHeight = getListHeight(p_tags.get(pCount), widths);
+                }
+                if ((height + strHeight) >= divHeight)
+                {
+                    div = saveDiv(divs, div);
+                    height = marginText;
+                    continue;
+                }
+                else
+                {
+                    height += strHeight + marginText;
+                    div.appendChild(p_tags.get(pCount));
+                }
+                pCount++;
+                if (pCount >= p_tags.size())
+                {
+                    div = saveDiv(divs, div);
+                    height = 0;
+                }
+            }
+        } // END MAIN WHILE
+
+        if (div.children().size() > 0)
+        {
+            saveDiv(divs, div);
+        }
+        String[] retDivs = new String[divs.size()];
+        for (int i = 0; i < divs.size(); i++)
+        {
+            retDivs[i] = divs.get(i).toString();
+        }
+        return retDivs;
+    }
+    
+    private String[] splitContentWithTags(String content, List<String> attachments, String type)
+    {
+        content = removeLotusAddings(content);
+        document = Jsoup.parse(content);
+        if (attachments == null)
+            attachments = new ArrayList<String>();
+        Elements p_tags = new Elements();
+        
+        removeImgTags(path,attachments);
+        if ("plain".equals(type))
+        {
+            parsePlainText(p_tags, content);
+        }
+        else
+        {
+            parseHtmlText(p_tags);
+        }
+        Elements tags = convertTagsToHtml(p_tags);
+        Elements divs = new Elements();
+        Element div = document.createElement("div");
+        int currentDivHeight = divHeight;
+        boolean imgOverflow = true;
+        boolean imgFloatLeft = false;
+        int[] lastImageSize = new int[2];
+        int imgLastHeight = 0;
+        //int attachmentCount = 0;
+        for(int i = 0; i < tags.size(); i++)
+        {
+            Element eachElement = tags.get(i);
+            int elemHeight = 0;
+            if ("p".equals(eachElement.tagName()))
+            {
+                if (imgOverflow)
+                {
+                    elemHeight = getStringHeight(eachElement.text(), makeWidthsArray(0, 0), 0);
+                }
+                else
+                {
+                    elemHeight = getStringHeight(eachElement.text(),
+                            makeWidthsArray(lastImageSize[IMG_WIDTH_INDEX], imgLastHeight), 0);
+                }
+                if(div.children().size() == 0)
+                {
+                    elemHeight += marginText;
+                }
+                elemHeight += marginText;
+            }
+            else
+                if ("img".equals(eachElement.tagName()))
+                {
+                    if ( i < tags.size()-1 && 
+                            ("img".equals(eachElement.tagName()) && "img".equals(tags.get(i+1).tagName())))
+                    {
+                        int[] params = addImages(div, divHeight - currentDivHeight, getTagAttachments(tags, i), 0);
+                        int imgAdded = params[0];
+                        int galeryHeight = params[1];
+                        if(imgAdded == 0)
+                        {
+                            i--;
+                            div = saveDiv(divs, div);
+                            currentDivHeight = divHeight;
+                            continue;
+                        }
+                        else
+                        {
+                           // attachmentCount += imgAdded;
+                            i += imgAdded-1;
+                            elemHeight = galeryHeight;
+                            currentDivHeight -= elemHeight;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        int[] imgSize = getImageSize(eachElement.attr("src"));
+                        eachElement = getImgElem(eachElement.attr("src"), imgFloatLeft?"left":"right",imgSize);
+                        lastImageSize = imgSize;
+                        lastImageSize[IMG_HEIGHT_INDEX]+= 2 * marginImg;
+                        lastImageSize[IMG_WIDTH_INDEX]+= 2 * marginImg;
+                        imgFloatLeft= !imgFloatLeft;
+                        imgOverflow = false;
+                        imgLastHeight = imgSize[IMG_HEIGHT_INDEX];
+                        elemHeight = 0;
+                    }
+                }
+            if ((currentDivHeight + ("img".equals(eachElement.tagName())?-imgLastHeight:imgLastHeight) - elemHeight) > 0)
+            {
+                div.appendChild(eachElement);
+                if ("p".equals(eachElement.tagName()))
+                {
+                    if ( i < tags.size()-1 && "img".equals(tags.get(i+1).tagName())
+                            && (imgLastHeight - elemHeight) > 0 )
+                    {
+                        eachElement.attr("style", "height: " + (imgLastHeight - marginText) + "px;");
+                        imgLastHeight = 0;
+                        elemHeight = 0;
+                        imgOverflow = true;
+                    }
+                    else
+                    {
+                        int pHeight = elemHeight;
+                        elemHeight = imgLastHeight - elemHeight > 0 ? 0 : elemHeight - imgLastHeight;
+                        if(!imgOverflow)
+                        {
+                            imgLastHeight -= pHeight;
+                        }
+                        if (!imgOverflow && imgLastHeight < 0)
+                        {
+                            imgOverflow = true;
+                            imgLastHeight = 0;
+                        }
+                    }
+                } 
+                if(!imgOverflow && "img".equals(eachElement.tagName()))
+                {
+                   currentDivHeight -= imgLastHeight; 
+                }
+                currentDivHeight -= elemHeight;
+            }
+            else
+            {
+                div = saveDiv(divs, div);
+                currentDivHeight = divHeight;
+                imgLastHeight = 0;
+                imgOverflow = true;
+                i--;
+            }
+        }
+        div = saveDiv(divs, div);
+        String[] divStrings = new String[divs.size()];
+        for (int j = 0; j < divStrings.length; j++)
+        {
+            divStrings[j] = divs.get(j).toString();
+        }
+        return divStrings;
+    }
+    
+    private List<String> getTagAttachments(Elements tags, int startTag)
+    {
+        List<String> attacments = new ArrayList<String>();
+        for(int i = startTag; i < tags.size(); i++)
+        {
+            if("img".equals(tags.get(i).tagName()))
+            {
+                attacments.add(tags.get(i).attr("src"));
+            }
+            else
+            {
+                break;
+            }
+        }
+        return attacments;
     }
 }

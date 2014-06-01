@@ -77,7 +77,7 @@ public class MessageData
                 htmlHelper.setDivWidth(myProps.getIntProperty(Constants.DIV_WIDTH)
                         - myProps.getIntArrayProperty(Constants.TEXT_MARGIN)[Constants.LEFT] * 2);
                 currentMessages.get(i).setContentParts(
-                        htmlHelper.splitContent(content, currentMessages.get(i).getAttachments(), currentMessages
+                        htmlHelper.getContent(content, currentMessages.get(i).getAttachments(), currentMessages
                                 .get(i).getEncoding().toLowerCase().contains("plain") ? "plain" : "mixed"));
             }
             if (checkNewMessages)
