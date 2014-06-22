@@ -32,7 +32,7 @@ public class NaiveBayesClassifier {
 				maxProbabilityName = eachClass;
 			}
 		}
-		System.out.println(maxProbabilityName + ": " + Math.exp(maxProbability) / summProbability);
+		//System.out.println(maxProbabilityName + ": " + Math.exp(maxProbability) / summProbability);
 		if( Math.exp(maxProbability) / summProbability < classMinProbability 
 				&& maxProbabilityName.equals(aClassName))
 		{
@@ -55,7 +55,7 @@ public class NaiveBayesClassifier {
 	{
 		String[] words = tokenize(aText);
 		double summaryProbability = 0.0;
-		System.out.print(aClass+": ");
+		//System.out.print(aClass+": ");
 		for(String eachWord : words)
 		{
 		    System.out.print(String.format("%.2f", model.wordLogProbability(aClass, eachWord))+", ");

@@ -62,7 +62,7 @@ public class NaiveBayesLearningAlgorithm
     public void addExample(Integer mailId, String aText, String aClass)
     {
         examples.put(mailId, new String[] {aText, aClass});
-        System.out.println(examples.get(-1)[0]);
+        
     }
 
     public Set<String> getDictionary()

@@ -7,6 +7,9 @@ import java.util.List;
 import org.mailnews.properties.AppProperties;
 import org.mailnews.properties.Constants;
 
+/**
+ * @uml.dependency   supplier="org.mailnews.helper.MailHelper"
+ */
 public class MessageData
 {
 
@@ -133,5 +136,31 @@ public class MessageData
     public List<MessageBean> getSpam()
     {
         return spam;
+    }
+
+    /**
+     * @uml.property  name="htmlHelper"
+     * @uml.associationEnd  inverse="messageData:org.mailnews.helper.HTMLHelper"
+     */
+    private HTMLHelper helper;
+
+    /**
+     * Getter of the property <tt>htmlHelper</tt>
+     * @return  Returns the helper.
+     * @uml.property  name="htmlHelper"
+     */
+    public HTMLHelper getHtmlHelper()
+    {
+        return helper;
+    }
+
+    /**
+     * Setter of the property <tt>htmlHelper</tt>
+     * @param htmlHelper  The helper to set.
+     * @uml.property  name="htmlHelper"
+     */
+    public void setHtmlHelper(HTMLHelper htmlHelper)
+    {
+        helper = htmlHelper;
     }
 }

@@ -139,3 +139,13 @@ background-image: url(../img/points.jpg)
 #notifier .button-next{
 	background-position: 100% 0%;
 }
+
+.device-info
+{
+    background: none repeat scroll 0 0 #adcb22;
+    color: #ffffff;
+    font: 34px/41px "Trebuchet MS",Arial,Helvetica,sans-serif;
+    text-align: center;
+    height: 41px;
+    overflow: hidden;
+}

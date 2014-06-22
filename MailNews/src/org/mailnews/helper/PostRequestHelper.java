@@ -2,6 +2,7 @@ package org.mailnews.helper;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +56,22 @@ public class PostRequestHelper
         }
     }
 
+    public static void processIdentifierCommand(HttpServletRequest request, HttpServletResponse response, Map<String, SessionProperties> aSessions) throws IOException
+    {
+        String name = request.getParameter("connection-name");
+        for (SessionProperties sessionProperties : aSessions.values())
+        {
+            if(name.equals(sessionProperties.getName()))
+            {
+                response.getWriter().print("not-free");
+                response.getWriter().close();
+                return;
+            }
+        }
+        response.getWriter().print("ok");
+        aSessions.put(name ,new SessionProperties(name, null));
+    }
+    
     private static void saveClassifierDictionary(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         response.setCharacterEncoding("UTF-8");

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import javax.imageio.ImageIO;
 
@@ -90,7 +89,7 @@ public class HTMLHelper
                 currentMaxWidth = maxWidth[currentMaxWithIndex][1];
                 height = stringCount * fontSize + (stringCount - 1) * (spacing - fontSize) + (int) (0.2 * fontSize);
                 if (height > maxWidth[currentMaxWithIndex][0])
-                {
+                {                 
                     currentMaxWithIndex++;
                 }
                 currentWidth = 0;
@@ -702,7 +701,7 @@ public class HTMLHelper
         return p_tags;
     }
     
-    public String[] splitContent(String content, List<String> attachments, String type)
+    private String[] splitContent(String content, List<String> attachments, String type)
     {
         content = removeLotusAddings(content);
         document = Jsoup.parse(content);

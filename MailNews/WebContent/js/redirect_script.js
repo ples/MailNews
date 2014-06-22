@@ -11,7 +11,8 @@ function nextPage(url,time)
 	timeStamp =new Date();
 	appURL = url.split("?")[0];
 	secondsToRedirect = time*1000;
-	startRequest("client-command=client-get&time="+secondsToRedirect, url, handleResponse);
+	startRequest("client-name=" + document.getElementById("client-name-id").getAttribute("value") + 
+			"&client-command=client-get&time="+secondsToRedirect, url, handleResponse);
 	setTimeout("updateTime()", secondsToRedirect);
 }
 
@@ -33,7 +34,8 @@ function handleResponse(text)
 		stopState = false;
 		setTimeout("updateTime()", secondsToRedirect);
 	}
-	startRequest("client-command=client-get&time="+secondsToRedirect, appURL, handleResponse);
+	startRequest("client-name=" + document.getElementById("client-name-id").getAttribute("value") 
+			+ "&client-command=client-get&time="+secondsToRedirect, appURL, handleResponse);
 }
 
 function redirectTo(url)

@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>Identifier</title>
+<script type="text/javascript" src="js/jquery/jquery-1.10.2.js"></script>
+<script type="text/javascript"
+	src="js/jquery/jquery-ui-1.10.4.custom.min.js"></script>
+<script type="text/javascript" src="js/admin-helper-script.js"></script>
+<style type="text/css">
+	
+
+	#form-div {
+		width: 400px;
+		height: 300px;
+		margin-top: 300px;
+		margin-left: 40%;
+		background-color: rgb(255, 155, 35);
+		text-align: center;
+	}
+	#identifier-form{
+		margin: 20px;
+		
+	}
+	
+	#connection_id{
+		width: 350px;
+		margin-top: 70px;
+		padding: 10px;
+		font-size: 26px;
+	}
+	
+	#not-free{
+		width: 380px;
+		margin-top: 100px;
+		margin-bottom: 50px;
+		color: white;
+		background-color: #aa1111;
+	}
+	
+	.ok-button
+	{
+		margin: 40px;
+		padding: 10px;
+		font-size: 30px;
+		background-color: rgb(32 , 56 , 158);
+		color: white;
+	}
+</style>
+</head>
+<body>
+	<form id="identifier-form" action="mail" method="post">
+		<div id="form-div">
+			<div id="not-free"></div>
+			<input id="connection_id" name="connection-name" type="text" />
+			<br>
+			<input id="submit-button" type="submit" class="ok-button"  value="OK"/>
+		</div>
+	</form>
+	
+	<script type="text/javascript">
+		URL = "mail";
+		bindFormOnAJAX("#identifier-form", onIdentifierComplete);
+	</script>
+</body>
+</html>

@@ -55,41 +55,7 @@ function onSpeedComplete(aResponse)
 function onManagerComplete(aResponse)
 {
 	refreshAll();
-//	var spamSubjectsNode = $("#spam-subjects");
-//	var spamContentNode = $("#spam-content");
-//	if(aResponse.indexOf("saved") != -1)
-//	{
-//		noty({text: 'SAVED!'});
-//		var idsStr = $("#selected-mails-input").attr("value");
-//		if (aResponse.indexOf(":") != -1)
-//		{
-//			idsStr += "," + aResponse.split(":")[1];
-//		}
-//
-//		var ids = idsStr.split(",");
-//		for ( var i = 0; i < ids.length; i++)
-//		{
-//			var subject = $("#"+ ids[i]);
-//			var content = $("#"+ ids[i] + "-content");
-//			subject.detach();
-//			content.detach();
-//			if (aResponse.indexOf(":") != -1)
-//			{
-//				spamSubjectsNode.append(subject);
-//				spamContentNode.append(content);
-//			} else
-//			{
-//				subject.remove();
-//				content.remove();
-//			}
-//
-//		}
-//	}
-//	else
-//		if(aResponse.indexOf("refresh-result:")!=-1)
-//		{
-//			refreshMails(aResponse);
-//		}
+
 }
 
 
@@ -97,36 +63,6 @@ function onManagerComplete(aResponse)
 function onSpamManagerComplete(aResponse)
 {
 	refreshAll();
-//	var mailSubjectsNode = $("#subjects");
-//	var mailContentNode = $("#mails-content");
-//	if(aResponse.indexOf("saved") != -1)
-//	{
-//		noty({text: 'SAVED!'});
-//		var idsStr = $("#selected-spam-input").attr("value");
-//		var ids = idsStr.split(",");
-//		for ( var i = 0; i < ids.length; i++)
-//		{
-//			var subject = $("#"+ ids[i]);
-//			var content = $("#"+ ids[i] + "-content");
-//			subject.detach();
-//			content.detach();
-//			if(aResponse.indexOf("deleted") != -1)
-//			{
-//				subject.remove();
-//				content.remove();
-//			} else
-//			{
-//				mailSubjectsNode.append(subject);
-//				mailContentNode.append(content);
-//			}
-//
-//		}
-//	}
-//	else
-//		if(aResponse.indexOf("refresh-result:")!=-1)
-//		{
-//			refreshSpam(aResponse);
-//		}
 }
 
 function refreshSpam(aResponse)
@@ -216,7 +152,6 @@ function onCancelClick()
 {
 	$("#dictionary").css("display", "block");
 	$("#edit-dictionary-area").css("display", "none");
-	//$("#edit-dictionary-area").text("");
 	$("#save-dictionary-button").css("display","none");
 	$("#cancel-edit").css("display","none");
 	$("#edit-dictionary-button").css("display","inline");
@@ -254,6 +189,18 @@ function onClassifierComplete(aResponse)
 	}
 }
 
+function onIdentifierComplete(aResponse)
+{
+	if(aResponse == "not-free")
+	{
+		$("#not-free").html("This identifier name are not free! Please enter differrent name.");
+	}
+	if(aResponse == "ok")
+	{
+		window.location = "mail?name=" + $("#connection_id").val();
+	}
+	
+}
 
 function onSpamRadioClick()
 {
