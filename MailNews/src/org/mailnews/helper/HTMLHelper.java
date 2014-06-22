@@ -77,12 +77,15 @@ public class HTMLHelper
         int currentWidth = indent;
         int stringCount = 1;
         String[] words = content.split(" ");
+        int buffLen = 0;
+        int buffStrLen = 0;
         int currentMaxWithIndex = 0;
         int spaceWidth = getWidth(" ");
         int currentMaxWidth = maxWidth[currentMaxWithIndex][1];
         for (int i = 0; i < words.length; i++)
         {
             currentWidth += (getWidth(words[i]) + spaceWidth);
+            buffLen += words[i].length()+1;
             if (currentWidth - getWidth(" ") >= currentMaxWidth)
             {
                 stringCount++;
@@ -90,10 +93,16 @@ public class HTMLHelper
                 height = stringCount * fontSize + (stringCount - 1) * (spacing - fontSize) + (int) (0.2 * fontSize);
                 if (height > maxWidth[currentMaxWithIndex][0])
                 {                 
+                    if(currentMaxWithIndex == maxWidth.length-1)
+                    {
+                        maxWidth[0][0] = buffStrLen;
+                        return -1; 
+                    }
                     currentMaxWithIndex++;
                 }
                 currentWidth = 0;
                 currentWidth += (getWidth(words[i]) + spaceWidth);
+                buffStrLen = buffLen;
             }
         }
         height = stringCount * fontSize + (stringCount - 1) * (spacing - fontSize) + (int) (0.27 * fontSize);
@@ -326,6 +335,8 @@ public class HTMLHelper
     private int getTableHeight(Element table, int[][] maxWidths)
     {
         int height = 0;
+        int longTrCutInd = -1;
+        int tdInd = 0;
         if (table.getElementsByTag("caption") != null && table.getElementsByTag("caption").size() > 0)
         {
             height += getStringHeight(table.getElementsByTag("caption").get(0).ownText(), maxWidths, 0);
@@ -338,17 +349,45 @@ public class HTMLHelper
             int maxTdHeight = 0;
             for (int j = 0; j < tr.children().size(); j++)
             {
+                int[][] widths = makeWidthsArray(divWidth - tdWidths[j], divHeight);
                 int tdHeight =
-                        getStringHeight(tr.children().get(j).ownText(),
-                                makeWidthsArray(divWidth - tdWidths[j], divHeight), 0);
+                        getStringHeight(tr.children().get(j).ownText(), widths, 0);
+                if (tdHeight == -1)
+                {
+                    longTrCutInd = widths[0][0];
+                    tdInd = j;
+                }
                 if (tdHeight > maxTdHeight)
                     maxTdHeight = tdHeight;
+            }
+            if (longTrCutInd != -1)
+            {
+                trs.add(i+1, splitLongTr(tr, longTrCutInd, tdInd));
+                i--;
+                longTrCutInd = -1;
+                continue;
             }
             height += maxTdHeight;
         }
         return height;
     }
 
+    private Element splitLongTr(Element tr, int cutIndex, int tdInd)
+    {
+        Element second = document.createElement("tr");
+        for (int i = 0; i < tr.children().size(); i++)
+        {
+            second.appendChild(document.createElement("td"));
+            if (i == tdInd)
+            {
+                String td = tr.children().get(i).text();
+                tr.children().get(i).text(td.substring(0,cutIndex));
+                second.child(i).text(td.substring(cutIndex-1));
+            }
+        }
+        return second;
+    }
+    
     private int[] setTableWidth(Element table, int[][] maxWidths)
     {
         Elements trs = table.getElementsByTag("tbody").get(0).children();
@@ -360,7 +399,7 @@ public class HTMLHelper
         {
             Element tr = trs.get(i);
             widths[i] = new int[tr.children().size()];
-            if (widths[i].length > columnsCount)
+            if (widths[i].length >= columnsCount)
             {
                 maxTdCountTr = tr;
                 columnsCount = widths[i].length;
@@ -586,20 +625,13 @@ public class HTMLHelper
             }
             else
             {
-                if (i > 1)
-                {
-                    tables = new Elements();
-                    trs.add(fTbody.children().last().clone());
-                    fTbody.children().last().remove();
-                    sTbody.html(trs.outerHtml());
-                    tables.add(fTable);
-                    tables.add(sTable);
-                    return tables;
-                }
-                else
-                {
-                    break;
-                }
+                tables = new Elements();
+                trs.add(fTbody.children().last().clone());
+                fTbody.children().last().remove();
+                sTbody.html(trs.outerHtml());
+                tables.add(fTable);
+                tables.add(sTable);
+                return tables;
             }
         }
         return null;
@@ -652,7 +684,7 @@ public class HTMLHelper
         {
             return true;
         }
-        return false;
+        return false; 
     }
     
     public String[] getContent(String content, List<String> attachments, String type)
@@ -701,6 +733,31 @@ public class HTMLHelper
         return p_tags;
     }
     
+    private Elements splitLongParagraphs(Elements p_tags)
+    {
+        int[][] widths = makeWidthsArray(0, 0);
+        for (int i = 0; i < p_tags.size(); i++)
+        {
+            if ("p".equals(p_tags.get(i).tagName()))
+            {
+                int height = getStringHeight(p_tags.get(i).text(), makeWidthsArray(0, 0), 0);
+                if (height == -1)
+                {
+                    String currentElem = p_tags.remove(i).text();
+                    int cutLength = widths[0][0];
+                    Element first = document.createElement("p");
+                    Element second = document.createElement("p");
+                    
+                    first.text(currentElem.substring(0, cutLength));
+                    second.text(currentElem.substring(cutLength+1, currentElem.length()-1));
+                    p_tags.add(i, first);
+                    p_tags.add(i+1, second);
+                }
+            }
+        }
+        return p_tags;
+    }
+    
     private String[] splitContent(String content, List<String> attachments, String type)
     {
         content = removeLotusAddings(content);
@@ -720,7 +777,7 @@ public class HTMLHelper
         }
         
         Elements divs = new Elements();
-        
+        p_tags = splitLongParagraphs(p_tags);
         int attachmentCount = 0;
         int pCount = 0;
         Element div = document.createElement("div");
