@@ -15,7 +15,10 @@ public class SessionProperties
         setName(aName);
         setItsContext(aContext);
     }
-
+    /**
+     * 
+     * @return
+     */
     public String getName()
     {
         return name;
